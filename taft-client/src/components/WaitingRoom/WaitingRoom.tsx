@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useLobbyStore } from '../../store/lobbyStore';
+import { MUTATORS } from '../../data/mutators';
 import styles from './WaitingRoom.module.css';
 
 export default function WaitingRoom() {
   const { roomCode, opponentConnected, error, goHome } = useLobbyStore();
+  const selectedMutator = useLobbyStore(s => s.selectedMutator);
   const [copied, setCopied] = useState(false);
   const [dots, setDots] = useState('');
 
@@ -51,6 +53,13 @@ export default function WaitingRoom() {
         </button>
       </div>
       <p className={styles.hint}>Отправьте код второму игроку</p>
+
+      {selectedMutator !== 'none' && (
+        <p className={styles.hint}>
+          Мутатор арены: <strong>{MUTATORS[selectedMutator].name}</strong>
+          {' — '}{MUTATORS[selectedMutator].description}
+        </p>
+      )}
 
       {opponentConnected ? (
         <span className={styles.connected}>Игрок 2 подключился!</span>

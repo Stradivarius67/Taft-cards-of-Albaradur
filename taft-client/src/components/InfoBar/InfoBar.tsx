@@ -1,5 +1,6 @@
 import { useGameStore } from '../../store/gameStore';
 import { FACTION_NAMES } from '../../types/game';
+import { MUTATORS } from '../../data/mutators';
 import styles from './InfoBar.module.css';
 
 const FACTION_SHORT: Record<string, string> = {
@@ -22,6 +23,7 @@ export default function InfoBar() {
 
   const opp = gs.opponent;
   const myTurn = isMyTurn();
+  const mutator = gs.mutator && gs.mutator !== 'none' ? MUTATORS[gs.mutator] : null;
 
   if (isMobile) {
     return (
@@ -33,6 +35,11 @@ export default function InfoBar() {
         <span className={`${styles.turnBadge} ${myTurn ? styles.myTurn : styles.oppTurn}`}>
           {myTurn ? 'Ваш ход' : 'Противник'}
         </span>
+        {mutator && (
+          <span className={styles.mutatorBadge} title={mutator.description}>
+            ★ {mutator.name}
+          </span>
+        )}
         <button
           className={`${styles.muteBtn} ${emoteMuted ? styles.muteBtnActive : ''}`}
           onClick={() => setEmoteMuted(!emoteMuted)}
@@ -59,6 +66,11 @@ export default function InfoBar() {
       <span className={opp.leaderUsed ? styles.leaderUsed : styles.leaderStatus}>
         Лидер: {opp.leaderUsed ? 'использован' : 'доступен'}
       </span>
+      {mutator && (
+        <span className={styles.mutatorBadge} title={mutator.description}>
+          ★ {mutator.name}
+        </span>
+      )}
       <button
         className={`${styles.muteBtn} ${emoteMuted ? styles.muteBtnActive : ''}`}
         onClick={() => setEmoteMuted(!emoteMuted)}

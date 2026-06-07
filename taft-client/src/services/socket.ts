@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import type { CardRow, Card, VisibleGameState, LeaderAbilityId, FactionId, SpectatorGameState } from '../types/game';
 import type { EmoteId } from '../data/emotes';
+import type { ArenaMutator } from '../data/mutators';
 
 function getBackendUrl(): string {
   // 1. Explicit env override
@@ -90,9 +91,9 @@ export function sendSelectFaction(faction: string): void {
   getSocket().emit('select_faction', { faction });
 }
 
-export function sendCreateRoom(openHands = false): void {
-  devLog('\u2192', 'create_room', { openHands });
-  getSocket().emit('create_room', { openHands });
+export function sendCreateRoom(openHands = false, mutator: ArenaMutator = 'none'): void {
+  devLog('\u2192', 'create_room', { openHands, mutator });
+  getSocket().emit('create_room', { openHands, mutator });
 }
 
 export function sendJoinRoom(code: string): void {

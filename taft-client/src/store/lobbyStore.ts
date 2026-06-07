@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { FactionId } from '../types/game';
 import * as sock from '../services/socket';
+import { type ArenaMutator, getWeeklyMutator } from '../data/mutators';
 
 export type LobbyScreen = 'home' | 'waiting' | 'faction_select' | 'room_full';
 
@@ -15,6 +16,7 @@ interface LobbyStore {
   error: string | null;
   isLoading: boolean;
   openHands: boolean;
+  selectedMutator: ArenaMutator;
 
   createRoom: () => void;
   joinRoom: (code: string) => void;
@@ -27,6 +29,7 @@ interface LobbyStore {
   setScreen: (screen: LobbyScreen) => void;
   setRoomFull: (code: string) => void;
   setOpenHands: (v: boolean) => void;
+  setMutator: (m: ArenaMutator) => void;
   goHome: () => void;
   reset: () => void;
 }
@@ -42,10 +45,11 @@ export const useLobbyStore = create<LobbyStore>((set, get) => ({
   error: null,
   isLoading: false,
   openHands: false,
+  selectedMutator: getWeeklyMutator(),
 
   createRoom: () => {
     set({ isLoading: true, error: null });
-    sock.sendCreateRoom(get().openHands);
+    sock.sendCreateRoom(get().openHands, get().selectedMutator);
   },
 
   joinRoom: (code: string) => {
@@ -72,6 +76,7 @@ export const useLobbyStore = create<LobbyStore>((set, get) => ({
   setScreen: (screen: LobbyScreen) => set({ screen }),
   setRoomFull: (code: string) => set({ screen: 'room_full', roomCode: code, isLoading: false }),
   setOpenHands: (v: boolean) => set({ openHands: v }),
+  setMutator: (m: ArenaMutator) => set({ selectedMutator: m }),
 
   goHome: () => {
     sock.disconnect();
@@ -86,6 +91,7 @@ export const useLobbyStore = create<LobbyStore>((set, get) => ({
       error: null,
       isLoading: false,
       openHands: false,
+      selectedMutator: getWeeklyMutator(),
     });
   },
 
@@ -100,5 +106,6 @@ export const useLobbyStore = create<LobbyStore>((set, get) => ({
     error: null,
     isLoading: false,
     openHands: false,
+    selectedMutator: getWeeklyMutator(),
   }),
 }));

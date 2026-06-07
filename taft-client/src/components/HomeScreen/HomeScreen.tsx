@@ -1,15 +1,19 @@
 import { useState, type KeyboardEvent } from 'react';
 import { useLobbyStore } from '../../store/lobbyStore';
 import { connect } from '../../services/socket';
+import { MUTATORS, MUTATOR_ORDER, getWeeklyMutator, type ArenaMutator } from '../../data/mutators';
 import styles from './HomeScreen.module.css';
 
 const VALID_CHARS = /^[A-Z2-9]$/;
+const WEEKLY_MUTATOR = getWeeklyMutator();
 
 export default function HomeScreen() {
   const [code, setCode] = useState('');
   const { createRoom, joinRoom, error, isLoading } = useLobbyStore();
   const openHands = useLobbyStore(s => s.openHands);
   const setOpenHands = useLobbyStore(s => s.setOpenHands);
+  const selectedMutator = useLobbyStore(s => s.selectedMutator);
+  const setMutator = useLobbyStore(s => s.setMutator);
 
   const handleCodeChange = (value: string) => {
     const upper = value.toUpperCase();
@@ -54,6 +58,27 @@ export default function HomeScreen() {
           />
           Режим открытых карт (мастер видит руки)
         </label>
+
+        <div className={styles.mutatorSection}>
+          <div className={styles.mutatorHeader}>
+            <span>Мутатор арены</span>
+            <span className={styles.weeklyBadge}>
+              ★ недели: {MUTATORS[WEEKLY_MUTATOR].name}
+            </span>
+          </div>
+          <select
+            className={styles.mutatorSelect}
+            value={selectedMutator}
+            onChange={e => setMutator(e.target.value as ArenaMutator)}
+          >
+            {MUTATOR_ORDER.map(id => (
+              <option key={id} value={id}>
+                {MUTATORS[id].name}{id === WEEKLY_MUTATOR ? ' ★' : ''}
+              </option>
+            ))}
+          </select>
+          <span className={styles.mutatorDesc}>{MUTATORS[selectedMutator].description}</span>
+        </div>
 
         <div className={styles.divider}>
           <span className={styles.dividerLine} />

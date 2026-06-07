@@ -5,6 +5,7 @@ export type CardAbility =
   | 'scorch' | 'muster' | 'drain' | 'lock'
   | 'none';
 export type CardType = 'unit' | 'special' | 'weather';
+export type { ArenaMutator } from '../data/mutators';
 export type FactionId = 'lion_guard' | 'imperial_dogs' | 'litlad_partisans' | 'grey_rangers' | 'vexitar_witches';
 export type LeaderAbilityId =
   | 'rally_the_guard'
@@ -88,6 +89,7 @@ export interface VisibleGameState {
   currentPlayerIndex: 0 | 1;
   round: number;
   weather: WeatherEffects;
+  mutator?: import('../data/mutators').ArenaMutator;
   partisansPending?: boolean;
   myIndex: 0 | 1;
   me: MyPlayerState;
@@ -118,6 +120,7 @@ export interface SpectatorGameState {
   currentPlayerIndex: 0 | 1;
   round: number;
   weather: WeatherEffects;
+  mutator?: import('../data/mutators').ArenaMutator;
   player1: SpectatorPlayerView;
   player2: SpectatorPlayerView;
   strength: {

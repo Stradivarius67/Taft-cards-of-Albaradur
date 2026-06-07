@@ -138,6 +138,56 @@
   cursor: pointer;
 }
 
+.mutatorSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: calc(6px * var(--game-scale));
+}
+
+.mutatorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8px * var(--game-scale));
+  font-size: var(--home-openh-font);
+  color: #888;
+}
+
+.weeklyBadge {
+  font-size: calc(11px * var(--game-scale));
+  color: #d4a843;
+  border: 1px solid rgba(212, 168, 67, 0.5);
+  border-radius: calc(4px * var(--game-scale));
+  padding: calc(1px * var(--game-scale)) calc(6px * var(--game-scale));
+  white-space: nowrap;
+}
+
+.mutatorSelect {
+  width: 100%;
+  padding: var(--home-input-pad-v) var(--home-input-pad-h);
+  border-radius: var(--home-input-radius);
+  border: 1px solid #444;
+  background: #2a2a3e;
+  color: #e0e0e0;
+  font-size: var(--home-openh-font);
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.mutatorSelect:focus {
+  border-color: #d4a843;
+}
+
+.mutatorDesc {
+  font-size: calc(12px * var(--game-scale));
+  color: #777;
+  line-height: 1.35;
+  min-height: calc(16px * var(--game-scale));
+}
+
 .error {
   color: #e74c3c;
   font-size: var(--home-error-font);

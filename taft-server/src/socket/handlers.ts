@@ -3,6 +3,7 @@ import { RoomManager } from '../rooms/manager.js';
 import { GameEngine } from '../game/engine.js';
 import { FactionId, CardRow, ClientToServerEvents, ServerToClientEvents, LeaderAbilityId, Room, SpectatorGameState, GameState, VALID_EMOTE_IDS } from '../types.js';
 import { factions } from '../game/factions.js';
+import { normalizeMutator } from '../game/mutators.js';
 import { gameLog, validateStateInvariants } from '../utils/logger.js';
 
 type IOServer = Server<ClientToServerEvents, ServerToClientEvents>;
@@ -24,10 +25,11 @@ export function setupSocketHandlers(io: IOServer, roomManager: RoomManager): voi
     // --- CREATE ROOM ---
     socket.on('create_room', (data) => {
       const openHands = data?.openHands ?? false;
-      const room = roomManager.createRoom(socket.id, openHands);
+      const mutator = normalizeMutator(data?.mutator);
+      const room = roomManager.createRoom(socket.id, openHands, mutator);
       socket.join(room.code);
       socket.emit('room_created', { code: room.code });
-      log(`Room ${room.code} created by ${socket.id} (openHands=${openHands})`);
+      log(`Room ${room.code} created by ${socket.id} (openHands=${openHands}, mutator=${mutator})`);
     });
 
     // --- JOIN ROOM ---
@@ -448,20 +450,21 @@ function getSpectatorState(room: Room, engine: GameEngine): SpectatorGameState {
     currentPlayerIndex: state.currentPlayerIndex,
     round: state.round,
     weather: { ...state.weather },
+    mutator: state.mutator,
     player1: makeView(p0, f0),
     player2: makeView(p1, f1),
     strength: {
       player1: {
-        melee: engine.calculateRowStrength(p0.field.melee, state.weather.frost, p0.hornActive.melee),
-        ranged: engine.calculateRowStrength(p0.field.ranged, state.weather.fog, p0.hornActive.ranged),
-        siege: engine.calculateRowStrength(p0.field.siege, state.weather.rain, p0.hornActive.siege),
-        total: engine.calculatePlayerStrength(p0, state.weather),
+        melee: engine.calculateRowStrength(p0.field.melee, state.weather.frost, p0.hornActive.melee, state.mutator),
+        ranged: engine.calculateRowStrength(p0.field.ranged, state.weather.fog, p0.hornActive.ranged, state.mutator),
+        siege: engine.calculateRowStrength(p0.field.siege, state.weather.rain, p0.hornActive.siege, state.mutator),
+        total: engine.calculatePlayerStrength(p0, state.weather, state.mutator),
       },
       player2: {
-        melee: engine.calculateRowStrength(p1.field.melee, state.weather.frost, p1.hornActive.melee),
-        ranged: engine.calculateRowStrength(p1.field.ranged, state.weather.fog, p1.hornActive.ranged),
-        siege: engine.calculateRowStrength(p1.field.siege, state.weather.rain, p1.hornActive.siege),
-        total: engine.calculatePlayerStrength(p1, state.weather),
+        melee: engine.calculateRowStrength(p1.field.melee, state.weather.frost, p1.hornActive.melee, state.mutator),
+        ranged: engine.calculateRowStrength(p1.field.ranged, state.weather.fog, p1.hornActive.ranged, state.mutator),
+        siege: engine.calculateRowStrength(p1.field.siege, state.weather.rain, p1.hornActive.siege, state.mutator),
+        total: engine.calculatePlayerStrength(p1, state.weather, state.mutator),
       },
     },
     log: state.log.slice(-20),

@@ -1,4 +1,4 @@
-import { Room, GameState, PlayerState } from '../types.js';
+import { Room, GameState, PlayerState, ArenaMutator } from '../types.js';
 
 const MAX_SPECTATORS = 5;
 
@@ -24,7 +24,7 @@ export class RoomManager {
     this.cleanupTimer = setInterval(() => this.cleanup(), CLEANUP_INTERVAL_MS);
   }
 
-  createRoom(socketId: string, openHands = false): Room {
+  createRoom(socketId: string, openHands = false, mutator: ArenaMutator = 'none'): Room {
     let code: string;
     do {
       code = generateCode();
@@ -37,6 +37,7 @@ export class RoomManager {
       currentPlayerIndex: 0,
       round: 1,
       weather: { frost: false, fog: false, rain: false },
+      mutator,
       log: [`Room ${code} created`],
       redrawsDone: [],
     };
@@ -49,6 +50,7 @@ export class RoomManager {
       spectatorSockets: [],
       disconnectTimers: new Map(),
       openHands,
+      mutator,
     };
 
     this.rooms.set(code, room);

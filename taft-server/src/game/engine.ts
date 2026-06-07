@@ -1,7 +1,8 @@
 import {
-  Card, CardRow, GameState, PlayerState, WeatherEffects, FactionId, LeaderAbilityId,
+  Card, CardRow, GameState, PlayerState, WeatherEffects, FactionId, LeaderAbilityId, ArenaMutator,
 } from '../types.js';
 import { getDeckCopy, factions } from './factions.js';
+import { getStartingHandSize, hornEnabled, unitStrengthBonus } from './mutators.js';
 import {
   applySpy, applyMedic, applyMedicChoice, applyDecoy,
   applyWeather, applyClear, applyHorn,
@@ -21,7 +22,12 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-function createPlayerState(id: string, faction: FactionId, playerIndex: number): PlayerState {
+function createPlayerState(
+  id: string,
+  faction: FactionId,
+  playerIndex: number,
+  handSize: number
+): PlayerState {
   const rawDeck = getDeckCopy(faction);
   // Prefix card IDs to avoid collisions in mirror matches
   const prefixedDeck = rawDeck.map(card => ({
@@ -29,7 +35,7 @@ function createPlayerState(id: string, faction: FactionId, playerIndex: number):
     id: `p${playerIndex}_${card.id}`,
   }));
   const deck = shuffle(prefixedDeck);
-  const hand = deck.splice(0, 10);
+  const hand = deck.splice(0, handSize);
   return {
     id,
     faction,
@@ -47,8 +53,9 @@ function createPlayerState(id: string, faction: FactionId, playerIndex: number):
 export class GameEngine {
   startGame(state: GameState): GameState {
     const s = cloneState(state);
-    const p0 = createPlayerState(s.players[0].id, s.players[0].faction, 0);
-    const p1 = createPlayerState(s.players[1].id, s.players[1].faction, 1);
+    const handSize = getStartingHandSize(s.mutator);
+    const p0 = createPlayerState(s.players[0].id, s.players[0].faction, 0, handSize);
+    const p1 = createPlayerState(s.players[1].id, s.players[1].faction, 1, handSize);
 
     s.players = [p0, p1];
     s.phase = 'redraw';
@@ -580,9 +587,16 @@ export class GameEngine {
 
   /**
    * Подсчёт силы ряда.
-   * Строгий порядок: base+modifier → weather → bond (*2) → morale (+1) → sum → horn (*2)
+   * Строгий порядок: base+modifier → weather → mutator (+1) → bond (*2) → morale (+1) → sum → horn (*2)
+   * Мутаторы: `reinforcements` даёт +1 каждому юниту (после погоды, поэтому
+   * приморожённый юнит = 2, а не 1); `still_air` отключает удвоение от рожка.
    */
-  calculateRowStrength(cards: Card[], weatherActive: boolean, hornActive: boolean): number {
+  calculateRowStrength(
+    cards: Card[],
+    weatherActive: boolean,
+    hornActive: boolean,
+    mutator: ArenaMutator = 'none'
+  ): number {
     if (cards.length === 0) return 0;
 
     const effectiveStrength = new Array<number>(cards.length);
@@ -597,6 +611,16 @@ export class GameEngine {
       for (let i = 0; i < cards.length; i++) {
         if (cards[i].type === 'unit') {
           effectiveStrength[i] = 1;
+        }
+      }
+    }
+
+    // Шаг 2.5: Мутатор «Подкрепления» — +1 каждому юниту (после погоды).
+    const mutatorBonus = unitStrengthBonus(mutator);
+    if (mutatorBonus !== 0) {
+      for (let i = 0; i < cards.length; i++) {
+        if (cards[i].type === 'unit') {
+          effectiveStrength[i] += mutatorBonus;
         }
       }
     }
@@ -634,25 +658,25 @@ export class GameEngine {
     // Шаг 5: Суммирование
     let rowTotal = effectiveStrength.reduce((sum, v) => sum + v, 0);
 
-    // Шаг 6: Horn
-    if (hornActive) {
+    // Шаг 6: Horn (мутатор «Безветрие» отключает удвоение)
+    if (hornActive && hornEnabled(mutator)) {
       rowTotal *= 2;
     }
 
     return rowTotal;
   }
 
-  calculatePlayerStrength(player: PlayerState, weather: WeatherEffects): number {
-    const melee = this.calculateRowStrength(player.field.melee, weather.frost, player.hornActive.melee);
-    const ranged = this.calculateRowStrength(player.field.ranged, weather.fog, player.hornActive.ranged);
-    const siege = this.calculateRowStrength(player.field.siege, weather.rain, player.hornActive.siege);
+  calculatePlayerStrength(player: PlayerState, weather: WeatherEffects, mutator: ArenaMutator = 'none'): number {
+    const melee = this.calculateRowStrength(player.field.melee, weather.frost, player.hornActive.melee, mutator);
+    const ranged = this.calculateRowStrength(player.field.ranged, weather.fog, player.hornActive.ranged, mutator);
+    const siege = this.calculateRowStrength(player.field.siege, weather.rain, player.hornActive.siege, mutator);
     return melee + ranged + siege;
   }
 
   resolveRound(state: GameState): GameState {
     let s = cloneState(state);
-    const s0 = this.calculatePlayerStrength(s.players[0], s.weather);
-    const s1 = this.calculatePlayerStrength(s.players[1], s.weather);
+    const s0 = this.calculatePlayerStrength(s.players[0], s.weather, s.mutator);
+    const s1 = this.calculatePlayerStrength(s.players[1], s.weather, s.mutator);
 
     s.log.push(`Round ${s.round} scores: P0=${s0}, P1=${s1}`);
 
@@ -814,6 +838,7 @@ export class GameEngine {
       round: state.round,
       currentPlayerIndex: state.currentPlayerIndex,
       weather: { ...state.weather },
+      mutator: state.mutator,
       partisansPending: state.partisansPending,
       myIndex: forPlayerIndex,
       me: {
@@ -843,16 +868,16 @@ export class GameEngine {
         leaderAbility: oppFaction.leader.ability,
       },
       myStrength: {
-        melee: this.calculateRowStrength(me.field.melee, state.weather.frost, me.hornActive.melee),
-        ranged: this.calculateRowStrength(me.field.ranged, state.weather.fog, me.hornActive.ranged),
-        siege: this.calculateRowStrength(me.field.siege, state.weather.rain, me.hornActive.siege),
-        total: this.calculatePlayerStrength(me, state.weather),
+        melee: this.calculateRowStrength(me.field.melee, state.weather.frost, me.hornActive.melee, state.mutator),
+        ranged: this.calculateRowStrength(me.field.ranged, state.weather.fog, me.hornActive.ranged, state.mutator),
+        siege: this.calculateRowStrength(me.field.siege, state.weather.rain, me.hornActive.siege, state.mutator),
+        total: this.calculatePlayerStrength(me, state.weather, state.mutator),
       },
       opponentStrength: {
-        melee: this.calculateRowStrength(opp.field.melee, state.weather.frost, opp.hornActive.melee),
-        ranged: this.calculateRowStrength(opp.field.ranged, state.weather.fog, opp.hornActive.ranged),
-        siege: this.calculateRowStrength(opp.field.siege, state.weather.rain, opp.hornActive.siege),
-        total: this.calculatePlayerStrength(opp, state.weather),
+        melee: this.calculateRowStrength(opp.field.melee, state.weather.frost, opp.hornActive.melee, state.mutator),
+        ranged: this.calculateRowStrength(opp.field.ranged, state.weather.fog, opp.hornActive.ranged, state.mutator),
+        siege: this.calculateRowStrength(opp.field.siege, state.weather.rain, opp.hornActive.siege, state.mutator),
+        total: this.calculatePlayerStrength(opp, state.weather, state.mutator),
       },
       log: state.log.slice(-20),
     };

@@ -1,3 +1,6 @@
+import type { ArenaMutator } from './game/mutators.js';
+export type { ArenaMutator } from './game/mutators.js';
+
 // --- Карты ---
 export type CardRow = 'melee' | 'ranged' | 'siege';
 
@@ -118,6 +121,8 @@ export interface GameState {
   currentPlayerIndex: 0 | 1;
   round: 1 | 2 | 3;
   weather: WeatherEffects;
+  /** Мутатор арены, действующий на весь матч. */
+  mutator: ArenaMutator;
   log: string[];
   redrawsDone: number[];
   partisansPending?: boolean;
@@ -147,6 +152,7 @@ export interface Room {
   spectatorSockets: string[];
   disconnectTimers: Map<string, ReturnType<typeof setTimeout>>;
   openHands: boolean;
+  mutator: ArenaMutator;
   lastEmote?: { [playerIndex: number]: number };
 }
 
@@ -171,6 +177,7 @@ export interface SpectatorGameState {
   currentPlayerIndex: 0 | 1;
   round: number;
   weather: WeatherEffects;
+  mutator: ArenaMutator;
   player1: SpectatorPlayerView;
   player2: SpectatorPlayerView;
   strength: {
@@ -206,7 +213,7 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-  create_room: (data?: { openHands?: boolean }) => void;
+  create_room: (data?: { openHands?: boolean; mutator?: ArenaMutator }) => void;
   join_room: (data: { code: string }) => void;
   join_as_spectator: (data: { code: string }) => void;
   select_faction: (data: { faction: FactionId }) => void;

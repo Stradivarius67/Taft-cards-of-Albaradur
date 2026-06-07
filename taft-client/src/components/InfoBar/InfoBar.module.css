@@ -78,6 +78,20 @@
   color: #666;
 }
 
+.mutatorBadge {
+  font-size: var(--info-round-font);
+  color: #d4a843;
+  border: 1px solid rgba(212, 168, 67, 0.45);
+  border-radius: var(--info-turn-radius);
+  padding: var(--info-turn-pad-v) var(--info-turn-pad-h);
+  white-space: nowrap;
+}
+
+:global(.mobile) .barMobile .mutatorBadge {
+  font-size: calc(11px * var(--game-scale));
+  padding: calc(2px * var(--game-scale)) calc(6px * var(--game-scale));
+}
+
 :global(.mobile) .barMobile {
   padding: calc(4px * var(--game-scale)) calc(8px * var(--game-scale));
   gap: calc(6px * var(--game-scale));
