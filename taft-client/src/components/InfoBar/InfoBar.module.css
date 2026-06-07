@@ -1,0 +1,98 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--info-pad-v) var(--info-pad-h);
+  background: #12122a;
+  border-bottom: 1px solid #333;
+  gap: var(--info-gap);
+}
+
+.opponent {
+  font-size: var(--info-opponent-font);
+  color: #ccc;
+}
+
+.round {
+  font-size: var(--info-round-font);
+  color: #aaa;
+}
+
+.turnBadge {
+  font-size: var(--info-turn-font);
+  padding: var(--info-turn-pad-v) var(--info-turn-pad-h);
+  border-radius: var(--info-turn-radius);
+  font-weight: bold;
+}
+
+.myTurn {
+  background: #27ae60;
+  color: #fff;
+}
+
+.oppTurn {
+  background: #555;
+  color: #aaa;
+}
+
+.leaderStatus {
+  font-size: var(--info-leader-font);
+  color: #888;
+}
+
+.leaderUsed {
+  color: #666;
+  text-decoration: line-through;
+}
+
+.muteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--info-mute-wh);
+  height: var(--info-mute-wh);
+  padding: 0;
+  border: 1px solid #333;
+  border-radius: var(--info-mute-radius);
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.muteBtn:hover {
+  color: #d4a843;
+  border-color: #555;
+}
+
+.muteBtnActive {
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.spectatorBadge {
+  display: flex;
+  align-items: center;
+  gap: var(--score-panel-gap);
+  font-size: var(--info-spectator-font);
+  color: #666;
+}
+
+:global(.mobile) .barMobile {
+  padding: calc(4px * var(--game-scale)) calc(8px * var(--game-scale));
+  gap: calc(6px * var(--game-scale));
+  font-size: var(--font-info);
+}
+
+:global(.mobile) .barMobile .opponent {
+  font-size: calc(11px * var(--game-scale));
+}
+
+:global(.mobile) .barMobile .round {
+  font-size: calc(11px * var(--game-scale));
+}
+
+:global(.mobile) .barMobile .turnBadge {
+  font-size: calc(11px * var(--game-scale));
+  padding: calc(2px * var(--game-scale)) calc(6px * var(--game-scale));
+}

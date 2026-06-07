@@ -1,0 +1,175 @@
+.card {
+  width: var(--card-slot-w);
+  height: var(--card-slot-h);
+  border-radius: var(--card-slot-radius);
+  background: #2a2a3e;
+  border: 1px solid #444;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: default;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+  /* Лицо персонажа обычно вверху арта */
+  background-size: cover;
+  background-position: center top;
+  /* КРИТИЧНО: гарантируем что арт не вылезает за скруглённые края */
+  overflow: hidden;
+}
+
+.hasArt {
+  justify-content: flex-end;
+}
+
+.card:hover {
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.15);
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  border-color: #fff;
+}
+
+.spy {
+  border-color: #e74c3c;
+}
+
+.bond {
+  border-color: #3498db;
+}
+
+.morale {
+  border-color: #444;
+}
+
+.morale::after {
+  content: '';
+  position: absolute;
+  top: var(--card-slot-morale-offset);
+  right: var(--card-slot-morale-offset);
+  width: var(--card-slot-morale-wh);
+  height: var(--card-slot-morale-wh);
+  border-radius: 50%;
+  background: #27ae60;
+}
+
+.strengthBadge {
+  position: absolute;
+  top: var(--card-slot-str-offset);
+  left: var(--card-slot-str-offset);
+  width: var(--card-slot-str-wh);
+  height: var(--card-slot-str-wh);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: var(--card-slot-ability-font);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  z-index: 2;
+}
+
+.weatheredBadge {
+  background: rgba(231, 76, 60, 0.85);
+  color: #fff;
+}
+
+.abilityBadge {
+  position: absolute;
+  top: var(--card-slot-ability-offset);
+  right: var(--card-slot-ability-offset);
+  width: var(--card-slot-ability-wh);
+  height: var(--card-slot-ability-wh);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #aaa;
+  font-size: var(--card-slot-ability-font);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* Legacy strength classes (kept for compatibility) */
+.strength {
+  font-size: var(--card-slot-strength-font);
+  font-weight: bold;
+  line-height: 1;
+  color: #fff;
+}
+
+.weathered .strength {
+  color: #e74c3c;
+  text-decoration: line-through;
+}
+
+.weatherStrength {
+  font-size: var(--card-slot-weather-font);
+  font-weight: bold;
+  color: #e74c3c;
+}
+
+.name {
+  font-size: var(--card-slot-name-font);
+  color: #aaa;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: var(--card-slot-name-w);
+  margin-top: var(--card-slot-str-offset);
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2e;
+  border: 1px solid #555;
+  border-radius: var(--card-slot-radius);
+  padding: var(--card-slot-ability-offset) var(--card-slot-str-offset);
+  font-size: var(--card-slot-ability-font);
+  color: #ddd;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.card:hover .tooltip {
+  display: block;
+}
+
+.highlight {
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+  border-color: #ffd700;
+}
+
+@keyframes bondPulse {
+  0%   { transform: scale(1); box-shadow: none; }
+  50%  { transform: scale(1.08); box-shadow: 0 0 12px rgba(55, 138, 221, 0.5); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+.bondPulse {
+  animation: bondPulse 400ms ease-in-out;
+}
+
+@keyframes moraleGlow {
+  0%   { box-shadow: none; }
+  50%  { box-shadow: 0 0 10px rgba(39, 174, 96, 0.5); }
+  100% { box-shadow: none; }
+}
+
+.moraleGlow {
+  animation: moraleGlow 300ms ease-in-out;
+}

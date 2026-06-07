@@ -1,0 +1,63 @@
+.hand {
+  padding: var(--hand-pad-v) var(--hand-pad-h);
+  background: #151528;
+  border-top: 1px solid #333;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--hand-mb);
+}
+
+.title {
+  font-size: var(--hand-title-font);
+  color: #aaa;
+}
+
+.deckInfo {
+  font-size: var(--hand-deck-font);
+  color: #666;
+}
+
+.cards {
+  display: flex;
+  gap: var(--hand-cards-gap);
+  overflow-x: auto;
+  padding-bottom: var(--hand-pad-v);
+}
+
+.cards::-webkit-scrollbar {
+  height: var(--hand-scroll-h);
+}
+
+.cards::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: var(--hand-scroll-radius);
+}
+
+/* Cramped mode: 8+ cards — tighter gap */
+.cramped .cards {
+  gap: calc(2px * var(--game-scale));
+}
+
+:global(.mobile) .cards {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  gap: calc(4px * var(--game-scale));
+  padding: calc(4px * var(--game-scale)) 0;
+  scrollbar-width: none;
+}
+
+:global(.mobile) .cards::-webkit-scrollbar {
+  display: none;
+}
+
+:global(.mobile) .cards > * {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+}

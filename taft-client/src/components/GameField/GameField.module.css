@@ -1,0 +1,195 @@
+.gameField {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* На ультрашироких экранах центрируем контент: ширина ограничена пропорцией 16:9
+     от высоты экрана (с буфером для боковых HUD-элементов). */
+  width: min(100vw, calc(100vh * 16 / 9 + 200px));
+  margin: 0 auto;
+  overflow: hidden;
+  background: #1a1a2e;
+  color: #ddd;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.battlefield {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.boardSection {
+  display: flex;
+  align-items: stretch;
+}
+
+.boardRows {
+  flex: 1;
+}
+
+.noGame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: calc(18px * var(--game-scale));
+  color: #666;
+}
+
+.error {
+  position: fixed;
+  top: var(--gf-error-top);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(231, 76, 60, 0.9);
+  color: #fff;
+  padding: var(--gf-error-pad-v) var(--gf-error-pad-h);
+  border-radius: var(--gf-error-radius);
+  font-size: var(--gf-error-font);
+  z-index: 500;
+}
+
+.partisansOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 250;
+}
+
+.partisansModal {
+  background: #1e1e32;
+  border: 1px solid #444;
+  border-radius: var(--gf-modal-radius);
+  padding: var(--gf-modal-pad-v) var(--gf-modal-pad-h);
+  text-align: center;
+}
+
+.partisansTitle {
+  font-size: var(--gf-modal-title-font);
+  color: #ddd;
+  margin-bottom: var(--gf-modal-title-mb);
+}
+
+.partisansBtns {
+  display: flex;
+  gap: var(--gf-modal-gap);
+  justify-content: center;
+}
+
+.partisansBtn {
+  padding: var(--gf-modal-btn-pad-v) var(--gf-modal-btn-pad-h);
+  border-radius: var(--gf-modal-btn-radius);
+  border: 1px solid #555;
+  background: #2a2a3e;
+  color: #ddd;
+  font-size: var(--gf-modal-btn-font);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.partisansBtn:hover {
+  background: #3a3a50;
+}
+
+.informantOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 250;
+}
+
+.informantModal {
+  background: #1e1e32;
+  border: 1px solid #444;
+  border-radius: var(--gf-modal-radius);
+  padding: var(--gf-modal-pad-v) var(--gf-modal-pad-h);
+  text-align: center;
+  max-width: calc(600px * var(--game-scale));
+}
+
+.informantTitle {
+  font-size: var(--gf-modal-title-font);
+  color: #ddd;
+  margin-bottom: var(--gf-modal-title-mb);
+}
+
+.informantCards {
+  display: flex;
+  gap: var(--gf-modal-gap);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.informantCardWrap {
+  cursor: pointer;
+  border-radius: var(--gf-modal-btn-radius);
+  border: 2px solid transparent;
+  padding: var(--medic-card-pad);
+  text-align: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.informantCardWrap:hover {
+  border-color: #e74c3c;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
+}
+
+.informantCardName {
+  font-size: var(--gf-informant-card-font);
+  color: #ccc;
+  margin-top: var(--medic-card-pad);
+}
+
+.rootsOverlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(39, 174, 96, 0.15);
+  border-top: 2px solid #27ae60;
+  padding: var(--gf-roots-pad-v) var(--gf-roots-pad-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gf-modal-gap);
+  z-index: 150;
+}
+
+.rootsText {
+  font-size: var(--gf-roots-font);
+  color: #27ae60;
+}
+
+.rootsBtn {
+  padding: var(--gf-roots-btn-pad-v) var(--gf-roots-btn-pad-h);
+  border-radius: var(--gf-roots-btn-radius);
+  border: 1px solid #27ae60;
+  background: transparent;
+  color: #27ae60;
+  cursor: pointer;
+  font-size: var(--gf-roots-btn-font);
+}
+
+.rootsBtn:hover {
+  background: rgba(39, 174, 96, 0.15);
+}
+
+:global(.mobile) .gameField {
+  height: 100dvh;
+  touch-action: manipulation;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+:global(.mobile) .battlefield {
+  grid-template-columns: var(--score-panel-w) minmax(0, 1fr);
+}

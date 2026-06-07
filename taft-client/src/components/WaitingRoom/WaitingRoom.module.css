@@ -1,0 +1,104 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  padding: var(--lobby-pad);
+}
+
+.title {
+  font-size: var(--wait-title-font);
+  font-weight: bold;
+  margin-bottom: calc(24px * var(--game-scale));
+}
+
+.codeLabel {
+  font-size: var(--wait-hint-font);
+  color: #888;
+  margin-bottom: calc(8px * var(--game-scale));
+}
+
+.codeBlock {
+  display: flex;
+  align-items: center;
+  gap: var(--info-gap);
+  margin-bottom: calc(24px * var(--game-scale));
+}
+
+.code {
+  font-size: var(--wait-code-font);
+  font-weight: bold;
+  font-family: 'Consolas', 'Courier New', monospace;
+  letter-spacing: calc(8px * var(--game-scale));
+  color: #d4a843;
+}
+
+.copyBtn {
+  padding: var(--wait-copy-pad-v) var(--wait-copy-pad-h);
+  border-radius: var(--wait-copy-radius);
+  border: 1px solid #555;
+  background: #2a2a3e;
+  color: #ddd;
+  font-size: var(--wait-copy-font);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.copyBtn:hover {
+  background: #3a3a50;
+  border-color: #888;
+}
+
+.copied {
+  border-color: #27ae60;
+  color: #27ae60;
+}
+
+.hint {
+  font-size: var(--wait-hint-font);
+  color: #888;
+  margin-bottom: calc(20px * var(--game-scale));
+}
+
+.status {
+  font-size: var(--wait-status-font);
+  color: #aaa;
+  margin-bottom: calc(8px * var(--game-scale));
+}
+
+.connected {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.dots {
+  display: inline-block;
+  width: calc(24px * var(--game-scale));
+  text-align: left;
+}
+
+.cancelBtn {
+  margin-top: calc(32px * var(--game-scale));
+  padding: var(--wait-cancel-pad-v) var(--wait-cancel-pad-h);
+  border-radius: var(--wait-cancel-radius);
+  border: 1px solid #555;
+  background: transparent;
+  color: #888;
+  font-size: var(--wait-cancel-font);
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  color: #ddd;
+  border-color: #888;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: var(--wait-cancel-font);
+  margin-top: calc(12px * var(--game-scale));
+}

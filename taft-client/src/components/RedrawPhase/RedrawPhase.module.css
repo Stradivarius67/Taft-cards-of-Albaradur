@@ -1,0 +1,129 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  padding: var(--redraw-pad);
+}
+
+.title {
+  font-size: var(--redraw-title-font);
+  font-weight: bold;
+  margin-bottom: var(--redraw-title-mb);
+}
+
+.subtitle {
+  font-size: var(--redraw-subtitle-font);
+  color: #888;
+  margin-bottom: var(--redraw-subtitle-mb);
+}
+
+.cards {
+  display: flex;
+  gap: var(--redraw-cards-gap);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: var(--redraw-cards-mb);
+}
+
+.card {
+  border-radius: var(--redraw-card-radius);
+  border: 2px solid #444;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  user-select: none;
+  flex-shrink: 0;
+  padding: var(--redraw-card-pad);
+}
+
+.cardMeta {
+  text-align: center;
+  margin-top: var(--redraw-card-pad);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.cardSelected {
+  border-color: #e74c3c;
+  box-shadow: 0 0 12px rgba(231, 76, 60, 0.4);
+  transform: translateY(-6px);
+}
+
+.cardStrength {
+  font-size: var(--redraw-card-str-font);
+  font-weight: bold;
+  color: #fff;
+}
+
+.cardName {
+  font-size: var(--redraw-card-name-font);
+  color: #bbb;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: var(--redraw-card-name-w);
+  margin-top: var(--redraw-card-pad);
+}
+
+.cardAbility {
+  font-size: var(--redraw-card-ability-font);
+  color: #888;
+  margin-top: calc(2px * var(--game-scale));
+}
+
+.counter {
+  font-size: var(--redraw-counter-font);
+  color: #aaa;
+  margin-bottom: var(--redraw-counter-mb);
+}
+
+.buttons {
+  display: flex;
+  gap: var(--redraw-btn-gap);
+}
+
+.btn {
+  padding: var(--redraw-btn-pad-v) var(--redraw-btn-pad-h);
+  border-radius: var(--redraw-btn-radius);
+  border: 1px solid #555;
+  background: transparent;
+  color: #ddd;
+  font-size: var(--redraw-btn-font);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.btnPrimary {
+  border-color: #d4a843;
+  color: #d4a843;
+}
+
+.btnPrimary:hover {
+  background: rgba(212, 168, 67, 0.12);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.waiting {
+  font-size: var(--redraw-waiting-font);
+  color: #888;
+  font-style: italic;
+  margin-top: var(--redraw-waiting-mt);
+}

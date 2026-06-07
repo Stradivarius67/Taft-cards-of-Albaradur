@@ -1,0 +1,426 @@
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  /* Тёмный фон чтобы на ультрашироких экранах "леттербоксы" по бокам были незаметны */
+  background: #0d0d18;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --game-scale: 1;
+
+  /* ── Card sizes ── */
+  /* CardSlot (field card) */
+  --card-slot-w: calc(50px * var(--game-scale));
+  --card-slot-h: calc(70px * var(--game-scale));
+  --card-slot-radius: calc(6px * var(--game-scale));
+  --card-slot-str-size: calc(18px * var(--game-scale));
+  --card-slot-str-wh: calc(18px * var(--game-scale));
+  --card-slot-str-offset: calc(2px * var(--game-scale));
+  --card-slot-ability-wh: calc(14px * var(--game-scale));
+  --card-slot-ability-offset: calc(2px * var(--game-scale));
+  --card-slot-ability-font: calc(8px * var(--game-scale));
+  --card-slot-name-font: calc(9px * var(--game-scale));
+  --card-slot-name-w: calc(44px * var(--game-scale));
+  --card-slot-morale-wh: calc(6px * var(--game-scale));
+  --card-slot-morale-offset: calc(3px * var(--game-scale));
+  --card-slot-strength-font: calc(18px * var(--game-scale));
+  --card-slot-weather-font: calc(14px * var(--game-scale));
+
+  /* HandCard */
+  --hand-card-w: calc(65px * var(--game-scale));
+  --hand-card-h: calc(90px * var(--game-scale));
+  --hand-card-radius: calc(6px * var(--game-scale));
+  --hand-card-str-wh: calc(20px * var(--game-scale));
+  --hand-card-str-offset: calc(3px * var(--game-scale));
+  --hand-card-str-font: calc(12px * var(--game-scale));
+  --hand-card-row-wh: calc(16px * var(--game-scale));
+  --hand-card-row-offset: calc(3px * var(--game-scale));
+  --hand-card-row-font: calc(8px * var(--game-scale));
+  --hand-card-name-font: calc(9px * var(--game-scale));
+  --hand-card-ability-font: calc(7px * var(--game-scale));
+  --hand-card-strength-font: calc(20px * var(--game-scale));
+  --hand-card-bottom-pad: calc(3px * var(--game-scale));
+
+  /* ── Row ── */
+  --row-min-h: calc(78px * var(--game-scale));
+  --row-pad-v: calc(4px * var(--game-scale));
+  --row-pad-h: calc(8px * var(--game-scale));
+  --row-gap: calc(4px * var(--game-scale));
+  --row-label-w: calc(70px * var(--game-scale));
+  --row-label-gap: calc(2px * var(--game-scale));
+  --row-name-font: calc(10px * var(--game-scale));
+  --row-strength-font: calc(16px * var(--game-scale));
+  --row-icon-font: calc(10px * var(--game-scale));
+  --row-cards-gap: calc(3px * var(--game-scale));
+  --row-cards-min-h: calc(70px * var(--game-scale));
+
+  /* ── ScorePanel ── */
+  --score-panel-w: calc(70px * var(--game-scale));
+  --score-panel-pad-v: calc(8px * var(--game-scale));
+  --score-panel-pad-h: calc(4px * var(--game-scale));
+  --score-panel-gap: calc(4px * var(--game-scale));
+  --score-label-font: calc(10px * var(--game-scale));
+  --score-strength-font: calc(24px * var(--game-scale));
+  --score-rounds-font: calc(14px * var(--game-scale));
+  --score-rounds-gap: calc(4px * var(--game-scale));
+  --score-passed-font: calc(9px * var(--game-scale));
+
+  /* ── WeatherBar ── */
+  --weather-min-h: calc(28px * var(--game-scale));
+  --weather-pad-v: calc(4px * var(--game-scale));
+  --weather-pad-h: calc(12px * var(--game-scale));
+  --weather-gap: calc(16px * var(--game-scale));
+  --weather-font: calc(12px * var(--game-scale));
+  --weather-empty-h: calc(4px * var(--game-scale));
+
+  /* ── Hand ── */
+  --hand-pad-v: calc(8px * var(--game-scale));
+  --hand-pad-h: calc(12px * var(--game-scale));
+  --hand-title-font: calc(12px * var(--game-scale));
+  --hand-deck-font: calc(11px * var(--game-scale));
+  --hand-mb: calc(6px * var(--game-scale));
+  --hand-cards-gap: calc(6px * var(--game-scale));
+  --hand-scroll-h: calc(4px * var(--game-scale));
+  --hand-scroll-radius: calc(2px * var(--game-scale));
+
+  /* ── InfoBar ── */
+  --info-pad-v: calc(8px * var(--game-scale));
+  --info-pad-h: calc(16px * var(--game-scale));
+  --info-gap: calc(12px * var(--game-scale));
+  --info-opponent-font: calc(13px * var(--game-scale));
+  --info-round-font: calc(13px * var(--game-scale));
+  --info-turn-font: calc(12px * var(--game-scale));
+  --info-turn-pad-v: calc(3px * var(--game-scale));
+  --info-turn-pad-h: calc(10px * var(--game-scale));
+  --info-turn-radius: calc(4px * var(--game-scale));
+  --info-leader-font: calc(11px * var(--game-scale));
+  --info-mute-wh: calc(24px * var(--game-scale));
+  --info-mute-radius: calc(4px * var(--game-scale));
+  --info-spectator-font: calc(11px * var(--game-scale));
+
+  /* ── ActionBar ── */
+  --action-pad-v: calc(8px * var(--game-scale));
+  --action-pad-h: calc(16px * var(--game-scale));
+  --action-gap: calc(12px * var(--game-scale));
+  --action-btn-pad-v: calc(8px * var(--game-scale));
+  --action-btn-pad-h: calc(20px * var(--game-scale));
+  --action-btn-radius: calc(6px * var(--game-scale));
+  --action-btn-font: calc(13px * var(--game-scale));
+  --action-wait-font: calc(13px * var(--game-scale));
+  --action-emote-wh: calc(32px * var(--game-scale));
+  --action-emote-radius: calc(6px * var(--game-scale));
+
+  /* ── EmoteBubble ── */
+  --emote-bubble-max-w: calc(260px * var(--game-scale));
+  --emote-bubble-pad-v: calc(8px * var(--game-scale));
+  --emote-bubble-pad-h: calc(14px * var(--game-scale));
+  --emote-bubble-radius: calc(12px * var(--game-scale));
+  --emote-bubble-font: calc(14px * var(--game-scale));
+  --emote-leader-font: calc(11px * var(--game-scale));
+  --emote-pos-top: calc(60px * var(--game-scale));
+  --emote-pos-right: calc(16px * var(--game-scale));
+  --emote-pos-bottom: calc(180px * var(--game-scale));
+  --emote-pos-left: calc(16px * var(--game-scale));
+
+  /* ── EmotePanel ── */
+  --emotep-pad: calc(10px * var(--game-scale));
+  --emotep-gap: calc(6px * var(--game-scale));
+  --emotep-btn-pad-v: calc(8px * var(--game-scale));
+  --emotep-btn-pad-h: calc(14px * var(--game-scale));
+  --emotep-btn-min-w: calc(78px * var(--game-scale));
+  --emotep-btn-radius: calc(8px * var(--game-scale));
+  --emotep-btn-font: calc(11px * var(--game-scale));
+  --emotep-icon-font: calc(18px * var(--game-scale));
+  --emotep-label-font: calc(10px * var(--game-scale));
+  --emotep-cooldown-mt: calc(8px * var(--game-scale));
+  --emotep-cooldown-h: calc(2px * var(--game-scale));
+  --emotep-right: calc(8px * var(--game-scale));
+  --emotep-mb: calc(8px * var(--game-scale));
+  --emotep-border-radius: calc(10px * var(--game-scale));
+
+  /* ── GameField modals ── */
+  --gf-error-top: calc(12px * var(--game-scale));
+  --gf-error-pad-v: calc(8px * var(--game-scale));
+  --gf-error-pad-h: calc(20px * var(--game-scale));
+  --gf-error-radius: calc(6px * var(--game-scale));
+  --gf-error-font: calc(13px * var(--game-scale));
+  --gf-modal-pad-v: calc(24px * var(--game-scale));
+  --gf-modal-pad-h: calc(32px * var(--game-scale));
+  --gf-modal-radius: calc(8px * var(--game-scale));
+  --gf-modal-title-font: calc(16px * var(--game-scale));
+  --gf-modal-title-mb: calc(16px * var(--game-scale));
+  --gf-modal-btn-pad-v: calc(10px * var(--game-scale));
+  --gf-modal-btn-pad-h: calc(24px * var(--game-scale));
+  --gf-modal-btn-radius: calc(6px * var(--game-scale));
+  --gf-modal-btn-font: calc(14px * var(--game-scale));
+  --gf-modal-gap: calc(12px * var(--game-scale));
+  --gf-informant-card-font: calc(10px * var(--game-scale));
+  --gf-roots-pad-v: calc(8px * var(--game-scale));
+  --gf-roots-pad-h: calc(16px * var(--game-scale));
+  --gf-roots-font: calc(13px * var(--game-scale));
+  --gf-roots-btn-pad-v: calc(6px * var(--game-scale));
+  --gf-roots-btn-pad-h: calc(16px * var(--game-scale));
+  --gf-roots-btn-radius: calc(6px * var(--game-scale));
+  --gf-roots-btn-font: calc(13px * var(--game-scale));
+
+  /* ── CardDetail ── */
+  --detail-w: calc(320px * var(--game-scale));
+  --detail-max-h: calc(520px * var(--game-scale));
+  --detail-radius: calc(12px * var(--game-scale));
+  --detail-art-h: calc(300px * var(--game-scale));
+  --detail-art-pad: calc(24px * var(--game-scale));
+  --detail-art-fallback-font: calc(22px * var(--game-scale));
+  --detail-str-wh: calc(48px * var(--game-scale));
+  --detail-str-top: calc(270px * var(--game-scale));
+  --detail-str-left: calc(16px * var(--game-scale));
+  --detail-str-font: calc(22px * var(--game-scale));
+  --detail-str-border: calc(3px * var(--game-scale));
+  --detail-info-pad-top: calc(14px * var(--game-scale));
+  --detail-info-pad-side: calc(16px * var(--game-scale));
+  --detail-info-pad-bot: calc(16px * var(--game-scale));
+  --detail-info-gap: calc(6px * var(--game-scale));
+  --detail-name-font: calc(18px * var(--game-scale));
+  --detail-faction-font: calc(13px * var(--game-scale));
+  --detail-badge-font: calc(11px * var(--game-scale));
+  --detail-badge-pad-v: calc(2px * var(--game-scale));
+  --detail-badge-pad-h: calc(8px * var(--game-scale));
+  --detail-badge-radius: calc(10px * var(--game-scale));
+  --detail-badge-gap: calc(6px * var(--game-scale));
+  --detail-ability-name-font: calc(14px * var(--game-scale));
+  --detail-ability-desc-font: calc(13px * var(--game-scale));
+  --detail-lore-font: calc(13px * var(--game-scale));
+  --detail-lore-pt: calc(8px * var(--game-scale));
+
+  /* ── RoundResult ── */
+  --rr-pad-v: calc(32px * var(--game-scale));
+  --rr-pad-h: calc(48px * var(--game-scale));
+  --rr-radius: calc(12px * var(--game-scale));
+  --rr-title-font: calc(28px * var(--game-scale));
+  --rr-title-mb: calc(12px * var(--game-scale));
+  --rr-score-font: calc(16px * var(--game-scale));
+  --rr-score-mb: calc(8px * var(--game-scale));
+  --rr-hint-font: calc(12px * var(--game-scale));
+
+  /* ── GameOver ── */
+  --go-pad-v: calc(40px * var(--game-scale));
+  --go-pad-h: calc(56px * var(--game-scale));
+  --go-radius: calc(12px * var(--game-scale));
+  --go-title-font: calc(36px * var(--game-scale));
+  --go-title-mb: calc(16px * var(--game-scale));
+  --go-score-font: calc(18px * var(--game-scale));
+  --go-score-mb: calc(24px * var(--game-scale));
+  --go-btn-pad-v: calc(12px * var(--game-scale));
+  --go-btn-pad-h: calc(32px * var(--game-scale));
+  --go-btn-radius: calc(8px * var(--game-scale));
+  --go-btn-font: calc(16px * var(--game-scale));
+
+  /* ── MedicPicker ── */
+  --medic-max-w: calc(700px * var(--game-scale));
+  --medic-pad: calc(24px * var(--game-scale));
+  --medic-radius: calc(8px * var(--game-scale));
+  --medic-title-font: calc(16px * var(--game-scale));
+  --medic-title-mb: calc(16px * var(--game-scale));
+  --medic-cards-gap: calc(12px * var(--game-scale));
+  --medic-card-pad: calc(4px * var(--game-scale));
+  --medic-card-radius: calc(6px * var(--game-scale));
+  --medic-card-name-font: calc(10px * var(--game-scale));
+  --medic-card-name-max-w: calc(100px * var(--game-scale));
+  --medic-card-str-font: calc(12px * var(--game-scale));
+  --medic-card-ability-font: calc(9px * var(--game-scale));
+  --medic-skip-mt: calc(16px * var(--game-scale));
+  --medic-skip-pad-v: calc(8px * var(--game-scale));
+  --medic-skip-pad-h: calc(20px * var(--game-scale));
+  --medic-skip-radius: calc(6px * var(--game-scale));
+  --medic-skip-font: calc(13px * var(--game-scale));
+
+  /* ── RedrawPhase ── */
+  --redraw-pad: calc(24px * var(--game-scale));
+  --redraw-title-font: calc(24px * var(--game-scale));
+  --redraw-title-mb: calc(8px * var(--game-scale));
+  --redraw-subtitle-font: calc(14px * var(--game-scale));
+  --redraw-subtitle-mb: calc(24px * var(--game-scale));
+  --redraw-cards-gap: calc(10px * var(--game-scale));
+  --redraw-cards-mb: calc(24px * var(--game-scale));
+  --redraw-card-pad: calc(4px * var(--game-scale));
+  --redraw-card-radius: calc(6px * var(--game-scale));
+  --redraw-card-str-font: calc(22px * var(--game-scale));
+  --redraw-card-name-font: calc(10px * var(--game-scale));
+  --redraw-card-name-w: calc(72px * var(--game-scale));
+  --redraw-card-ability-font: calc(8px * var(--game-scale));
+  --redraw-counter-font: calc(14px * var(--game-scale));
+  --redraw-counter-mb: calc(16px * var(--game-scale));
+  --redraw-btn-gap: calc(12px * var(--game-scale));
+  --redraw-btn-pad-v: calc(10px * var(--game-scale));
+  --redraw-btn-pad-h: calc(28px * var(--game-scale));
+  --redraw-btn-radius: calc(8px * var(--game-scale));
+  --redraw-btn-font: calc(15px * var(--game-scale));
+  --redraw-waiting-font: calc(15px * var(--game-scale));
+  --redraw-waiting-mt: calc(16px * var(--game-scale));
+
+  /* ── Lobby screens (HomeScreen, WaitingRoom, FactionSelect, RoomFull) ── */
+  --lobby-pad: calc(20px * var(--game-scale));
+  --home-title-font: calc(36px * var(--game-scale));
+  --home-subtitle-font: calc(14px * var(--game-scale));
+  --home-content-max-w: calc(400px * var(--game-scale));
+  --home-btn-pad-v: calc(14px * var(--game-scale));
+  --home-btn-pad-h: calc(24px * var(--game-scale));
+  --home-btn-radius: calc(8px * var(--game-scale));
+  --home-btn-font: calc(16px * var(--game-scale));
+  --home-input-pad-v: calc(12px * var(--game-scale));
+  --home-input-pad-h: calc(16px * var(--game-scale));
+  --home-input-radius: calc(8px * var(--game-scale));
+  --home-input-font: calc(20px * var(--game-scale));
+  --home-join-font: calc(15px * var(--game-scale));
+  --home-divider-font: calc(13px * var(--game-scale));
+  --home-error-font: calc(13px * var(--game-scale));
+  --home-openh-font: calc(12px * var(--game-scale));
+
+  --wait-title-font: calc(24px * var(--game-scale));
+  --wait-code-font: calc(36px * var(--game-scale));
+  --wait-copy-pad-v: calc(8px * var(--game-scale));
+  --wait-copy-pad-h: calc(16px * var(--game-scale));
+  --wait-copy-radius: calc(6px * var(--game-scale));
+  --wait-copy-font: calc(13px * var(--game-scale));
+  --wait-hint-font: calc(14px * var(--game-scale));
+  --wait-status-font: calc(15px * var(--game-scale));
+  --wait-cancel-pad-v: calc(8px * var(--game-scale));
+  --wait-cancel-pad-h: calc(20px * var(--game-scale));
+  --wait-cancel-radius: calc(6px * var(--game-scale));
+  --wait-cancel-font: calc(13px * var(--game-scale));
+
+  --faction-title-font: calc(24px * var(--game-scale));
+  --faction-grid-gap: calc(16px * var(--game-scale));
+  --faction-card-w: calc(280px * var(--game-scale));
+  --faction-confirm-pad-v: calc(12px * var(--game-scale));
+  --faction-confirm-pad-h: calc(40px * var(--game-scale));
+  --faction-confirm-radius: calc(8px * var(--game-scale));
+  --faction-confirm-font: calc(16px * var(--game-scale));
+  --faction-status-font: calc(14px * var(--game-scale));
+  --faction-error-font: calc(13px * var(--game-scale));
+  --faction-cancel-pad-v: calc(8px * var(--game-scale));
+  --faction-cancel-pad-h: calc(20px * var(--game-scale));
+  --faction-cancel-radius: calc(6px * var(--game-scale));
+  --faction-cancel-font: calc(13px * var(--game-scale));
+
+  --roomfull-title-font: calc(28px * var(--game-scale));
+  --roomfull-subtitle-font: calc(14px * var(--game-scale));
+  --roomfull-buttons-w: calc(300px * var(--game-scale));
+  --roomfull-btn-gap: calc(12px * var(--game-scale));
+  --roomfull-spectate-pad-v: calc(14px * var(--game-scale));
+  --roomfull-spectate-pad-h: calc(24px * var(--game-scale));
+  --roomfull-spectate-radius: calc(8px * var(--game-scale));
+  --roomfull-spectate-font: calc(16px * var(--game-scale));
+  --roomfull-back-pad-v: calc(12px * var(--game-scale));
+  --roomfull-back-pad-h: calc(24px * var(--game-scale));
+  --roomfull-back-radius: calc(8px * var(--game-scale));
+  --roomfull-back-font: calc(14px * var(--game-scale));
+
+  /* ── FactionCard ── */
+  --fc-w: calc(280px * var(--game-scale));
+  --fc-radius: calc(8px * var(--game-scale));
+  --fc-leader-art-h: calc(120px * var(--game-scale));
+  --fc-leader-fallback-h: calc(80px * var(--game-scale));
+  --fc-leader-fallback-pad: calc(8px * var(--game-scale));
+  --fc-accent-h: calc(4px * var(--game-scale));
+  --fc-body-pad: calc(16px * var(--game-scale));
+  --fc-name-font: calc(18px * var(--game-scale));
+  --fc-name-mb: calc(6px * var(--game-scale));
+  --fc-leader-font: calc(13px * var(--game-scale));
+  --fc-leader-mb: calc(10px * var(--game-scale));
+  --fc-info-font: calc(12px * var(--game-scale));
+  --fc-info-mb: calc(4px * var(--game-scale));
+  --fc-desc-font: calc(12px * var(--game-scale));
+  --fc-desc-mt: calc(8px * var(--game-scale));
+
+  /* ── SpectatorView ── */
+  --sv-top-pad-v: calc(8px * var(--game-scale));
+  --sv-top-pad-h: calc(16px * var(--game-scale));
+  --sv-spectator-font: calc(12px * var(--game-scale));
+  --sv-round-font: calc(14px * var(--game-scale));
+  --sv-round-gap: calc(8px * var(--game-scale));
+  --sv-dot-wh: calc(8px * var(--game-scale));
+  --sv-dot-gap: calc(4px * var(--game-scale));
+  --sv-wins-font: calc(16px * var(--game-scale));
+  --sv-error-pad-v: calc(8px * var(--game-scale));
+  --sv-error-pad-h: calc(16px * var(--game-scale));
+  --sv-error-font: calc(13px * var(--game-scale));
+  --sv-board-pad: calc(8px * var(--game-scale));
+  --sv-board-header-gap: calc(12px * var(--game-scale));
+  --sv-board-header-pad-v: calc(6px * var(--game-scale));
+  --sv-board-header-pad-h: calc(8px * var(--game-scale));
+  --sv-player-font: calc(14px * var(--game-scale));
+  --sv-total-font: calc(22px * var(--game-scale));
+  --sv-passed-font: calc(11px * var(--game-scale));
+  --sv-passed-pad-v: calc(2px * var(--game-scale));
+  --sv-passed-pad-h: calc(8px * var(--game-scale));
+  --sv-passed-radius: calc(4px * var(--game-scale));
+  --sv-meta-font: calc(11px * var(--game-scale));
+  --sv-meta-gap: calc(12px * var(--game-scale));
+  --sv-center-w: calc(120px * var(--game-scale));
+  --sv-turn-pad-v: calc(8px * var(--game-scale));
+  --sv-turn-pad-h: calc(16px * var(--game-scale));
+  --sv-turn-font: calc(14px * var(--game-scale));
+  --sv-log-pad-v: calc(6px * var(--game-scale));
+  --sv-log-pad-h: calc(16px * var(--game-scale));
+  --sv-log-max-h: calc(120px * var(--game-scale));
+  --sv-log-font: calc(11px * var(--game-scale));
+  --sv-hand-font: calc(11px * var(--game-scale));
+  --sv-hand-gap: calc(4px * var(--game-scale));
+  --sv-modal-pad-v: calc(32px * var(--game-scale));
+  --sv-modal-pad-h: calc(48px * var(--game-scale));
+  --sv-modal-radius: calc(12px * var(--game-scale));
+  --sv-modal-title-font: calc(28px * var(--game-scale));
+  --sv-modal-title-mb: calc(12px * var(--game-scale));
+  --sv-modal-score-font: calc(16px * var(--game-scale));
+  --sv-modal-score-mb: calc(24px * var(--game-scale));
+  --sv-modal-btn-pad-v: calc(12px * var(--game-scale));
+  --sv-modal-btn-pad-h: calc(24px * var(--game-scale));
+  --sv-modal-btn-radius: calc(8px * var(--game-scale));
+  --sv-modal-btn-font: calc(14px * var(--game-scale));
+}
+
+/* ═══════════════════════════════════════════════
+   Мобильные размеры (viewport < 768px)
+   Класс .mobile добавляется на <html> через useGameScale
+   ═══════════════════════════════════════════════ */
+
+.mobile {
+  --card-slot-w: calc(36px * var(--game-scale));
+  --card-slot-h: calc(50px * var(--game-scale));
+
+  --hand-card-w: calc(50px * var(--game-scale));
+  --hand-card-h: calc(70px * var(--game-scale));
+
+  --row-min-h: calc(56px * var(--game-scale));
+  --row-padding: calc(4px * var(--game-scale));
+  --row-gap: calc(3px * var(--game-scale));
+  --row-label-w: calc(20px * var(--game-scale));
+
+  --score-panel-w: calc(36px * var(--game-scale));
+  --weather-min-h: calc(24px * var(--game-scale));
+
+  --detail-w: min(calc(300px * var(--game-scale)), 90vw);
+  --detail-art-h: calc(250px * var(--game-scale));
+
+  --font-score: calc(18px * var(--game-scale));
+  --font-row-label: calc(9px * var(--game-scale));
+  --font-info: calc(12px * var(--game-scale));
+  --font-detail-name: calc(17px * var(--game-scale));
+  --font-detail-ability: calc(13px * var(--game-scale));
+  --font-detail-lore: calc(12px * var(--game-scale));
+  --strength-circle-size: calc(40px * var(--game-scale));
+  --strength-circle-font: calc(18px * var(--game-scale));
+
+  --gap-sm: calc(2px * var(--game-scale));
+  --gap-md: calc(4px * var(--game-scale));
+  --gap-lg: calc(8px * var(--game-scale));
+
+  --action-btn-padding: calc(8px * var(--game-scale)) calc(12px * var(--game-scale));
+  --action-btn-font: calc(12px * var(--game-scale));
+  --action-emote-wh: calc(36px * var(--game-scale));
+}

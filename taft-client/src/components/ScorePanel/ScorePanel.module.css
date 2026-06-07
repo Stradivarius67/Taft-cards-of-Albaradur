@@ -1,0 +1,67 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: var(--score-panel-w);
+  padding: var(--score-panel-pad-v) var(--score-panel-pad-h);
+  gap: var(--score-panel-gap);
+}
+
+.label {
+  font-size: var(--score-label-font);
+  color: #888;
+  text-transform: uppercase;
+}
+
+.strength {
+  font-size: var(--score-strength-font);
+  font-weight: bold;
+  line-height: 1;
+}
+
+.winning {
+  color: #27ae60;
+}
+
+.losing {
+  color: #e74c3c;
+}
+
+.tied {
+  color: #aaa;
+}
+
+.rounds {
+  display: flex;
+  gap: var(--score-rounds-gap);
+  font-size: var(--score-rounds-font);
+}
+
+.roundWon {
+  color: #ffd700;
+}
+
+.roundEmpty {
+  color: #444;
+}
+
+.passed {
+  font-size: var(--score-passed-font);
+  color: #e74c3c;
+  text-transform: uppercase;
+}
+
+:global(.mobile) .panel {
+  padding: calc(4px * var(--game-scale));
+}
+
+:global(.mobile) .rounds {
+  flex-direction: row;
+  gap: 2px;
+}
+
+:global(.mobile) .roundWon,
+:global(.mobile) .roundEmpty {
+  font-size: calc(10px * var(--game-scale));
+}

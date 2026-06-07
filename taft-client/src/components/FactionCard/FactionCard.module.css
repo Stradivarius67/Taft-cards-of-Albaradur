@@ -1,0 +1,79 @@
+.card {
+  background: #2a2a3e;
+  border: 1px solid #444;
+  border-radius: var(--fc-radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, opacity 0.2s;
+  width: var(--fc-w);
+}
+
+.card:hover:not(.disabled) {
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+}
+
+.selected {
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.3);
+}
+
+.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.leaderArt {
+  height: var(--fc-leader-art-h);
+  width: 100%;
+  background-size: cover;
+  background-position: center top;
+}
+
+.leaderFallback {
+  height: var(--fc-leader-fallback-h);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--fc-leader-fallback-pad);
+}
+
+.accent {
+  height: var(--fc-accent-h);
+  width: 100%;
+}
+
+.body {
+  padding: var(--fc-body-pad);
+}
+
+.name {
+  font-size: var(--fc-name-font);
+  font-weight: bold;
+  color: #e0e0e0;
+  margin-bottom: var(--fc-name-mb);
+}
+
+.leader {
+  font-size: var(--fc-leader-font);
+  color: #aaa;
+  margin-bottom: var(--fc-leader-mb);
+}
+
+.info {
+  font-size: var(--fc-info-font);
+  color: #999;
+  margin-bottom: var(--fc-info-mb);
+  line-height: 1.4;
+}
+
+.infoLabel {
+  color: #bbb;
+}
+
+.description {
+  font-size: var(--fc-desc-font);
+  color: #777;
+  font-style: italic;
+  margin-top: var(--fc-desc-mt);
+}

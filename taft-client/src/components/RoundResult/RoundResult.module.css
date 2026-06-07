@@ -1,0 +1,65 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  cursor: pointer;
+}
+
+.modal {
+  background: #1e1e32;
+  border: 1px solid #444;
+  border-radius: var(--rr-radius);
+  padding: var(--rr-pad-v) var(--rr-pad-h);
+  text-align: center;
+}
+
+.title {
+  font-size: var(--rr-title-font);
+  font-weight: bold;
+  margin-bottom: var(--rr-title-mb);
+}
+
+.won {
+  color: #27ae60;
+}
+
+.lost {
+  color: #e74c3c;
+}
+
+.draw {
+  color: #f39c12;
+}
+
+.score {
+  font-size: var(--rr-score-font);
+  color: #aaa;
+  margin-bottom: var(--rr-score-mb);
+}
+
+.rulesHint {
+  font-size: var(--rr-hint-font);
+  color: #d4a843;
+  font-style: italic;
+  margin-bottom: var(--rr-score-mb);
+  max-width: calc(360px * var(--game-scale));
+  line-height: 1.4;
+}
+
+.hint {
+  font-size: var(--rr-hint-font);
+  color: #666;
+}
+
+:global(.mobile) .modal {
+  width: 100vw;
+  max-height: 80vh;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  border-radius: calc(16px * var(--game-scale)) calc(16px * var(--game-scale)) 0 0;
+}

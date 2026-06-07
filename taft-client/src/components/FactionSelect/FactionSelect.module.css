@@ -1,0 +1,85 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  padding: var(--redraw-pad);
+}
+
+.title {
+  font-size: var(--faction-title-font);
+  font-weight: bold;
+  margin-bottom: calc(24px * var(--game-scale));
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, var(--faction-card-w));
+  gap: var(--faction-grid-gap);
+  margin-bottom: calc(24px * var(--game-scale));
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.confirmBtn {
+  padding: var(--faction-confirm-pad-v) var(--faction-confirm-pad-h);
+  border-radius: var(--faction-confirm-radius);
+  border: 1px solid #d4a843;
+  background: transparent;
+  color: #d4a843;
+  font-size: var(--faction-confirm-font);
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-bottom: var(--faction-grid-gap);
+}
+
+.confirmBtn:hover {
+  background: rgba(212, 168, 67, 0.12);
+}
+
+.status {
+  font-size: var(--faction-status-font);
+  color: #888;
+}
+
+.confirmed {
+  color: #27ae60;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: var(--faction-error-font);
+  margin-top: calc(8px * var(--game-scale));
+}
+
+.cancelBtn {
+  margin-top: var(--faction-grid-gap);
+  padding: var(--faction-cancel-pad-v) var(--faction-cancel-pad-h);
+  border-radius: var(--faction-cancel-radius);
+  border: 1px solid #555;
+  background: transparent;
+  color: #888;
+  font-size: var(--faction-cancel-font);
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  color: #ddd;
+  border-color: #888;
+}
+
+:global(.mobile) .grid {
+  grid-template-columns: 1fr;
+  gap: calc(8px * var(--game-scale));
+}
+
+:global(.mobile) .factionCard {
+  width: 100%;
+}

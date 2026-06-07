@@ -1,0 +1,86 @@
+import { useState, type KeyboardEvent } from 'react';
+import { useLobbyStore } from '../../store/lobbyStore';
+import { connect } from '../../services/socket';
+import styles from './HomeScreen.module.css';
+
+const VALID_CHARS = /^[A-Z2-9]$/;
+
+export default function HomeScreen() {
+  const [code, setCode] = useState('');
+  const { createRoom, joinRoom, error, isLoading } = useLobbyStore();
+  const openHands = useLobbyStore(s => s.openHands);
+  const setOpenHands = useLobbyStore(s => s.setOpenHands);
+
+  const handleCodeChange = (value: string) => {
+    const upper = value.toUpperCase();
+    const filtered = upper.split('').filter(c => VALID_CHARS.test(c)).join('');
+    setCode(filtered.slice(0, 6));
+  };
+
+  const handleCreate = () => {
+    connect();
+    createRoom();
+  };
+
+  const handleJoin = () => {
+    if (code.length !== 6) return;
+    connect();
+    joinRoom(code);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') handleJoin();
+  };
+
+  return (
+    <div className={styles.container}>
+      <h1 className={styles.title}>Тафт: Карты Альбарадура</h1>
+      <p className={styles.subtitle}>Карточная мини-игра для двоих</p>
+
+      <div className={styles.content}>
+        <button
+          className={styles.createBtn}
+          onClick={handleCreate}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Создание...' : 'Создать комнату'}
+        </button>
+
+        <label className={styles.openHandsLabel}>
+          <input
+            type="checkbox"
+            checked={openHands}
+            onChange={e => setOpenHands(e.target.checked)}
+          />
+          Режим открытых карт (мастер видит руки)
+        </label>
+
+        <div className={styles.divider}>
+          <span className={styles.dividerLine} />
+          <span className={styles.dividerText}>или</span>
+          <span className={styles.dividerLine} />
+        </div>
+
+        <div className={styles.joinSection}>
+          <input
+            className={styles.codeInput}
+            type="text"
+            placeholder="Код комнаты"
+            value={code}
+            onChange={e => handleCodeChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            maxLength={6}
+          />
+          <button
+            className={styles.joinBtn}
+            onClick={handleJoin}
+            disabled={code.length !== 6 || isLoading}
+          >
+            Присоединиться
+          </button>
+          {error && <span className={styles.error}>{error}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}

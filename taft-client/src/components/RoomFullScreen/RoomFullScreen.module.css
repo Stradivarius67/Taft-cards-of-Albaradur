@@ -1,0 +1,60 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  padding: var(--lobby-pad);
+}
+
+.title {
+  font-size: var(--roomfull-title-font);
+  font-weight: bold;
+  color: #d4a843;
+  margin-bottom: calc(8px * var(--game-scale));
+}
+
+.subtitle {
+  font-size: var(--roomfull-subtitle-font);
+  color: #888;
+  margin-bottom: calc(32px * var(--game-scale));
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--roomfull-btn-gap);
+  width: var(--roomfull-buttons-w);
+}
+
+.spectateBtn {
+  padding: var(--roomfull-spectate-pad-v) var(--roomfull-spectate-pad-h);
+  border-radius: var(--roomfull-spectate-radius);
+  border: 1px solid #d4a843;
+  background: transparent;
+  color: #d4a843;
+  font-size: var(--roomfull-spectate-font);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.spectateBtn:hover {
+  background: rgba(212, 168, 67, 0.12);
+}
+
+.backBtn {
+  padding: var(--roomfull-back-pad-v) var(--roomfull-back-pad-h);
+  border-radius: var(--roomfull-back-radius);
+  border: 1px solid #555;
+  background: transparent;
+  color: #888;
+  font-size: var(--roomfull-back-font);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}

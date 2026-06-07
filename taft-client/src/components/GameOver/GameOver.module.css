@@ -1,0 +1,65 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+}
+
+.modal {
+  background: #1e1e32;
+  border: 1px solid #444;
+  border-radius: var(--go-radius);
+  padding: var(--go-pad-v) var(--go-pad-h);
+  text-align: center;
+}
+
+.title {
+  font-size: var(--go-title-font);
+  font-weight: bold;
+  margin-bottom: var(--go-title-mb);
+}
+
+.won {
+  color: #ffd700;
+}
+
+.lost {
+  color: #e74c3c;
+}
+
+.draw {
+  color: #f39c12;
+}
+
+.score {
+  font-size: var(--go-score-font);
+  color: #aaa;
+  margin-bottom: var(--go-score-mb);
+}
+
+.btn {
+  padding: var(--go-btn-pad-v) var(--go-btn-pad-h);
+  border-radius: var(--go-btn-radius);
+  border: 1px solid #d4a843;
+  background: transparent;
+  color: #d4a843;
+  font-size: var(--go-btn-font);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn:hover {
+  background: rgba(212, 168, 67, 0.15);
+}
+
+:global(.mobile) .modal {
+  width: 100vw;
+  max-height: 80vh;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  border-radius: calc(16px * var(--game-scale)) calc(16px * var(--game-scale)) 0 0;
+}

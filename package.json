@@ -1,0 +1,24 @@
+{
+  "name": "taft-cards-of-albaradur",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Тафт: Карты Альбарадура — карточная мини-игра для НРИ",
+  "scripts": {
+    "install:all": "npm install --prefix taft-server && npm install --prefix taft-client",
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev --prefix taft-server\" \"npm run dev --prefix taft-client\"",
+    "build": "npm run build --prefix taft-client && npm run build:copy",
+    "build:copy": "node -e \"const fs=require('fs');const p=require('path');fs.rmSync(p.join('taft-server','public'),{recursive:true,force:true});fs.cpSync(p.join('taft-client','dist'),p.join('taft-server','public'),{recursive:true})\"",
+    "start": "npm run build --prefix taft-server && npm run build && node taft-server/dist/index.js",
+    "start:dev": "npm run dev",
+    "host": "npm run build --prefix taft-server && node scripts/host.mjs",
+    "test": "npm test --prefix taft-server",
+    "import-art": "node scripts/import-art.js",
+    "check-art": "node scripts/check-art.js",
+    "install:launcher": "npm install --prefix launcher",
+    "build:exe": "npm run build --prefix launcher",
+    "clean": "node -e \"const fs=require('fs');['taft-server/node_modules','taft-client/node_modules','taft-server/public','taft-client/dist'].forEach(d=>fs.rmSync(d,{recursive:true,force:true}))\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}

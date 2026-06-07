@@ -1,0 +1,6 @@
+node_modules/
+dist/
+public/
+ngrok.yml
+.taft-clip.tmp
+.taft-ngrok/

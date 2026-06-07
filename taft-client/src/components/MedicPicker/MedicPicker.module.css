@@ -1,0 +1,96 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal {
+  background: #1e1e32;
+  border: 1px solid #444;
+  border-radius: var(--medic-radius);
+  padding: var(--medic-pad);
+  max-width: var(--medic-max-w);
+  text-align: center;
+}
+
+.title {
+  font-size: var(--medic-title-font);
+  color: #ddd;
+  margin-bottom: var(--medic-title-mb);
+}
+
+.cards {
+  display: flex;
+  gap: var(--medic-cards-gap);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cardWrap {
+  cursor: pointer;
+  border-radius: var(--medic-card-radius);
+  border: 2px solid transparent;
+  padding: var(--medic-card-pad);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  text-align: center;
+}
+
+.cardWrap:hover {
+  border-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.cardInfo {
+  margin-top: var(--medic-card-pad);
+}
+
+.cardName {
+  display: block;
+  font-size: var(--medic-card-name-font);
+  color: #ccc;
+  max-width: var(--medic-card-name-max-w);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardStr {
+  font-size: var(--medic-card-str-font);
+  font-weight: bold;
+  color: #fff;
+}
+
+.cardAbility {
+  display: block;
+  font-size: var(--medic-card-ability-font);
+  color: #888;
+}
+
+.skipBtn {
+  margin-top: var(--medic-skip-mt);
+  padding: var(--medic-skip-pad-v) var(--medic-skip-pad-h);
+  border-radius: var(--medic-skip-radius);
+  border: 1px solid #555;
+  background: transparent;
+  color: #888;
+  font-size: var(--medic-skip-font);
+  cursor: pointer;
+}
+
+.skipBtn:hover {
+  color: #ddd;
+  border-color: #888;
+}
+
+:global(.mobile) .modal {
+  width: 100vw;
+  max-height: 80vh;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  border-radius: calc(16px * var(--game-scale)) calc(16px * var(--game-scale)) 0 0;
+}

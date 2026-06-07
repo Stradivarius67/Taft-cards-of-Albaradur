@@ -1,0 +1,92 @@
+.bubble {
+  position: absolute;
+  max-width: var(--emote-bubble-max-w);
+  padding: var(--emote-bubble-pad-v) var(--emote-bubble-pad-h);
+  border-radius: var(--emote-bubble-radius) var(--emote-bubble-radius) var(--emote-bubble-radius) calc(4px * var(--game-scale));
+  font-size: var(--emote-bubble-font);
+  line-height: 1.4;
+  pointer-events: none;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+.leader {
+  font-size: var(--emote-leader-font);
+  color: #888;
+  margin-bottom: calc(2px * var(--game-scale));
+  letter-spacing: 0.3px;
+}
+
+.line {
+  font-size: var(--emote-bubble-font);
+  line-height: 1.4;
+}
+
+/* Position variants */
+.pos_top {
+  top: var(--emote-pos-top);
+  right: var(--emote-pos-right);
+}
+
+.pos_bottom {
+  bottom: var(--emote-pos-bottom);
+  right: var(--emote-pos-right);
+  border-radius: var(--emote-bubble-radius) var(--emote-bubble-radius) calc(4px * var(--game-scale)) var(--emote-bubble-radius);
+}
+
+.pos_left {
+  top: 50%;
+  left: var(--emote-pos-left);
+  transform: translateY(-50%);
+}
+
+.pos_right {
+  top: 50%;
+  right: var(--emote-pos-right);
+  transform: translateY(-50%);
+}
+
+/* Faction colors */
+.bubble_lion_guard {
+  background: rgba(212, 168, 67, 0.12);
+  border: 1px solid rgba(212, 168, 67, 0.4);
+  color: #D4A843;
+}
+
+.bubble_imperial_dogs {
+  background: rgba(192, 57, 43, 0.12);
+  border: 1px solid rgba(192, 57, 43, 0.4);
+  color: #E74C3C;
+}
+
+.bubble_litlad_partisans {
+  background: rgba(39, 174, 96, 0.12);
+  border: 1px solid rgba(39, 174, 96, 0.4);
+  color: #27AE60;
+}
+
+.bubble_grey_rangers {
+  background: rgba(127, 140, 141, 0.15);
+  border: 1px solid rgba(127, 140, 141, 0.4);
+  color: #95A5A6;
+}
+
+.bubble_vexitar_witches {
+  background: rgba(108, 52, 131, 0.15);
+  border: 1px solid rgba(108, 52, 131, 0.5);
+  color: #BB8FCE;
+}
+
+:global(.mobile) .pos_top {
+  top: calc(40px * var(--game-scale));
+  left: 50%;
+  transform: translateX(-50%);
+  right: auto;
+}
+
+:global(.mobile) .pos_bottom {
+  bottom: calc(120px * var(--game-scale));
+  left: 50%;
+  transform: translateX(-50%);
+  right: auto;
+}

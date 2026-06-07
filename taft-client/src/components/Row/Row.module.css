@@ -1,0 +1,112 @@
+.row {
+  display: flex;
+  align-items: center;
+  padding: var(--row-pad-v) var(--row-pad-h);
+  min-height: var(--row-min-h);
+  background: #1e1e32;
+  border-bottom: 1px solid #333;
+  transition: background 0.4s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  gap: var(--row-gap);
+  position: relative;
+}
+
+.weatherActive {
+  background: rgba(231, 76, 60, 0.12);
+  border-left: 2px solid rgba(231, 76, 60, 0.3);
+}
+
+.hornActive {
+  box-shadow: inset 0 0 0 2px #d4a843;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.label {
+  width: var(--row-label-w);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--row-label-gap);
+}
+
+.rowName {
+  font-size: var(--row-name-font);
+  color: #888;
+  text-transform: uppercase;
+}
+
+.rowStrength {
+  font-size: var(--row-strength-font);
+  font-weight: bold;
+  color: #fff;
+}
+
+.weatherIcon {
+  font-size: var(--row-icon-font);
+  color: #e74c3c;
+}
+
+.hornIcon {
+  font-size: var(--row-icon-font);
+  color: #d4a843;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--row-cards-gap);
+  flex: 1;
+  min-height: var(--row-cards-min-h);
+  align-items: center;
+}
+
+/* Density: dense (7-12 cards) — tighter gap */
+.dense .cards {
+  gap: calc(1px * var(--game-scale));
+}
+
+/* Density: overlap (13+ cards) — negative margin overlap */
+.overlap .cards {
+  gap: 0;
+}
+
+.overlap .cards > * {
+  margin-right: calc(-6px * var(--game-scale));
+}
+
+.overlap .cards > *:last-child {
+  margin-right: 0;
+}
+
+:global(.mobile) .row {
+  min-height: var(--row-min-h);
+  padding: var(--row-padding);
+  gap: var(--row-gap);
+}
+
+:global(.mobile) .cards {
+  gap: 0;
+}
+
+/* Card overlap on mobile when many cards */
+:global(.mobile) .cards > * + * {
+  margin-left: calc(-8px * var(--game-scale));
+}
+
+:global(.mobile) .label {
+  font-size: var(--font-row-label);
+  width: var(--row-label-w);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+:global(.mobile) .rowName {
+  font-size: var(--font-row-label);
+}

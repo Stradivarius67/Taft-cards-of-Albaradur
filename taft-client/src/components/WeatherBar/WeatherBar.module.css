@@ -1,0 +1,22 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--weather-min-h);
+  background: #12122a;
+  border-top: 1px solid #333;
+  border-bottom: 1px solid #333;
+  gap: var(--weather-gap);
+  padding: var(--weather-pad-v) var(--weather-pad-h);
+}
+
+.empty {
+  min-height: var(--weather-empty-h);
+  padding: 0;
+  background: #333;
+}
+
+.effect {
+  font-size: var(--weather-font);
+  color: #5dade2;
+}

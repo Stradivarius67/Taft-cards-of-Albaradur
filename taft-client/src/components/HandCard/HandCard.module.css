@@ -1,0 +1,133 @@
+.card {
+  width: var(--hand-card-w);
+  height: var(--hand-card-h);
+  border-radius: var(--hand-card-radius);
+  background: #2a2a3e;
+  border: 2px solid #444;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+  flex-shrink: 0;
+  user-select: none;
+  background-size: cover;
+  background-position: center top;
+  overflow: hidden;
+}
+
+.hasArt {
+  justify-content: flex-end;
+}
+
+.card:hover:not(.disabled) {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.selected {
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+  border-color: #ffd700 !important;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.special {
+  border-color: #d4a843;
+}
+
+.weather {
+  border-color: #3498db;
+}
+
+.strengthBadge {
+  position: absolute;
+  top: var(--hand-card-str-offset);
+  left: var(--hand-card-str-offset);
+  width: var(--hand-card-str-wh);
+  height: var(--hand-card-str-wh);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: var(--hand-card-str-font);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  z-index: 2;
+}
+
+.rowBadge {
+  position: absolute;
+  top: var(--hand-card-row-offset);
+  right: var(--hand-card-row-offset);
+  width: var(--hand-card-row-wh);
+  height: var(--hand-card-row-wh);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #aaa;
+  font-size: var(--hand-card-row-font);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* Legacy classes kept for non-art fallback */
+.strength {
+  font-size: var(--hand-card-strength-font);
+  font-weight: bold;
+  color: #fff;
+  line-height: 1;
+}
+
+.bottom {
+  width: 100%;
+  padding: var(--hand-card-bottom-pad) var(--hand-card-bottom-pad);
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+  text-align: center;
+}
+
+.name {
+  font-size: var(--hand-card-name-font);
+  color: #ddd;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  width: 100%;
+}
+
+.abilityTag {
+  font-size: var(--hand-card-ability-font);
+  color: #999;
+  display: block;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2e;
+  border: 1px solid #555;
+  border-radius: var(--hand-card-radius);
+  padding: var(--hand-card-row-offset) var(--hand-card-str-offset);
+  font-size: var(--hand-card-str-font);
+  color: #ddd;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.card:hover .tooltip {
+  display: block;
+}

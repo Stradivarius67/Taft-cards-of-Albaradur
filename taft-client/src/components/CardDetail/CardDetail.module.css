@@ -1,0 +1,164 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  cursor: pointer;
+}
+
+.card {
+  width: var(--detail-w);
+  max-height: var(--detail-max-h);
+  background: #1e1e32;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--detail-radius);
+  overflow: hidden;
+  cursor: default;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Art area */
+.art {
+  width: var(--detail-w);
+  height: var(--detail-art-h);
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  border-radius: var(--detail-radius) var(--detail-radius) 0 0;
+  flex-shrink: 0;
+}
+
+.artFallback {
+  width: var(--detail-w);
+  height: var(--detail-art-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--detail-art-pad);
+  border-radius: var(--detail-radius) var(--detail-radius) 0 0;
+}
+
+.artFallbackName {
+  font-size: var(--detail-art-fallback-font);
+  font-weight: bold;
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* Strength circle */
+.strengthCircle {
+  position: absolute;
+  top: var(--detail-str-top);
+  left: var(--detail-str-left);
+  width: var(--detail-str-wh);
+  height: var(--detail-str-wh);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--detail-str-font);
+  font-weight: bold;
+  color: #fff;
+  border: var(--detail-str-border) solid #1e1e32;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+
+/* Info section */
+.info {
+  padding: var(--detail-info-pad-top) var(--detail-info-pad-side) var(--detail-info-pad-bot);
+  display: flex;
+  flex-direction: column;
+  gap: var(--detail-info-gap);
+  overflow-y: auto;
+}
+
+.name {
+  font-size: var(--detail-name-font);
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.faction {
+  font-size: var(--detail-faction-font);
+  color: #888;
+}
+
+/* Badges */
+.badges {
+  display: flex;
+  gap: var(--detail-badge-gap);
+  flex-wrap: wrap;
+  margin-top: calc(2px * var(--game-scale));
+}
+
+.badge {
+  font-size: var(--detail-badge-font);
+  padding: var(--detail-badge-pad-v) var(--detail-badge-pad-h);
+  border-radius: var(--detail-badge-radius);
+  background: rgba(255, 255, 255, 0.07);
+  color: #aaa;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.badgeFlex {
+  color: #27ae60;
+  border-color: rgba(39, 174, 96, 0.25);
+}
+
+/* Ability */
+.abilitySection {
+  margin-top: calc(4px * var(--game-scale));
+}
+
+.abilityName {
+  font-size: var(--detail-ability-name-font);
+  font-weight: 600;
+  color: #d4a843;
+}
+
+.abilityDesc {
+  font-size: var(--detail-ability-desc-font);
+  color: #bbb;
+  margin: calc(4px * var(--game-scale)) 0 0;
+  line-height: 1.4;
+}
+
+/* Lore */
+.lore {
+  font-size: var(--detail-lore-font);
+  color: #777;
+  font-style: italic;
+  line-height: 1.4;
+  margin: calc(4px * var(--game-scale)) 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: var(--detail-lore-pt);
+}
+
+:global(.mobile) .overlay {
+  align-items: flex-end;
+}
+
+:global(.mobile) .card {
+  width: 100vw;
+  max-height: 85vh;
+  border-radius: calc(16px * var(--game-scale)) calc(16px * var(--game-scale)) 0 0;
+  overflow-y: auto;
+}
+
+:global(.mobile) .art {
+  width: 100%;
+  height: 50vw;
+}
+
+:global(.mobile) .artFallback {
+  width: 100%;
+  height: 50vw;
+}

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+taft-server/public/
+taft-server/node_modules/
+taft-client/node_modules/
+taft-client/dist/
+.env
+.env.local
+*.log
+
+# Исходные PNG-арты (рабочие ассеты лежат в taft-client/src/assets)
+Графика/
