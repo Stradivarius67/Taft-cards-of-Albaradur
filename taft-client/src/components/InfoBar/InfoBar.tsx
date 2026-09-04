@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { FACTION_NAMES } from '../../types/game';
 import { MUTATORS } from '../../data/mutators';
@@ -11,7 +12,7 @@ const FACTION_SHORT: Record<string, string> = {
   vexitar_witches: 'Ведьмы',
 };
 
-export default function InfoBar() {
+function InfoBar() {
   const gs = useGameStore(s => s.gameState);
   const isMyTurn = useGameStore(s => s.isMyTurn);
   const spectatorCount = useGameStore(s => s.spectatorCount);
@@ -93,3 +94,5 @@ export default function InfoBar() {
     </div>
   );
 }
+
+export default memo(InfoBar);

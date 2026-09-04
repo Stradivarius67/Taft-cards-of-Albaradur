@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --pretty false",
     "preview": "vite preview",
     "optimize-cards": "node scripts/optimize-cards.mjs"
   },
   "dependencies": {
-    "taft-cards-of-albaradur": "file:..",
     "framer-motion": "^12.38.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -23,7 +23,6 @@
     "@vitejs/plugin-react": "^4.2.1",
     "sharp": "^0.34.5",
     "typescript": "^5.3.3",
-    "vite": "^5.1.0",
-    "vite-plugin-image-optimizer": "^2.0.3"
+    "vite": "^5.1.0"
   }
 }

@@ -1,33 +1,29 @@
+import { lazy, Suspense } from 'react';
 import { useSocket } from './hooks/useSocket';
 import { useGameScale } from './hooks/useGameScale';
 import { useGameStore } from './store/gameStore';
 import Lobby from './components/Lobby/Lobby';
-import RedrawPhase from './components/RedrawPhase/RedrawPhase';
-import GameField from './components/GameField/GameField';
-import SpectatorView from './components/SpectatorView/SpectatorView';
+
+const RedrawPhase = lazy(() => import('./components/RedrawPhase/RedrawPhase'));
+const GameField = lazy(() => import('./components/GameField/GameField'));
+const SpectatorView = lazy(() => import('./components/SpectatorView/SpectatorView'));
+
+function ScreenLoader() {
+  return <div role="status" aria-live="polite">Загрузка игрового поля...</div>;
+}
 
 export default function App() {
   useSocket();
   useGameScale();
-  const gameState = useGameStore(s => s.gameState);
+  const gamePhase = useGameStore(s => s.gameState?.phase ?? null);
   const isSpectator = useGameStore(s => s.isSpectator);
-  const spectatorState = useGameStore(s => s.spectatorState);
+  const hasSpectatorState = useGameStore(s => s.spectatorState !== null);
 
-  // Spectator mode
-  if (isSpectator && spectatorState) {
-    return <SpectatorView />;
-  }
+  let screen;
+  if (isSpectator && hasSpectatorState) screen = <SpectatorView />;
+  else if (!gamePhase) screen = <Lobby />;
+  else if (gamePhase === 'redraw') screen = <RedrawPhase />;
+  else screen = <GameField />;
 
-  // No game state yet → show lobby
-  if (!gameState) {
-    return <Lobby />;
-  }
-
-  // Redraw phase → show redraw screen
-  if (gameState.phase === 'redraw') {
-    return <RedrawPhase />;
-  }
-
-  // Playing / round_end / game_over → show game field
-  return <GameField />;
+  return <Suspense fallback={<ScreenLoader />}>{screen}</Suspense>;
 }

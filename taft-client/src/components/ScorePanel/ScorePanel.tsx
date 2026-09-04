@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedNumber from '../AnimatedNumber/AnimatedNumber';
 import styles from './ScorePanel.module.css';
@@ -10,7 +11,7 @@ interface Props {
   player: 'self' | 'opponent';
 }
 
-export default function ScorePanel({ totalStrength, opponentStrength, roundsWon, passed, player }: Props) {
+function ScorePanel({ totalStrength, opponentStrength, roundsWon, passed, player }: Props) {
   const strengthClass =
     totalStrength > opponentStrength ? styles.winning
     : totalStrength < opponentStrength ? styles.losing
@@ -43,3 +44,5 @@ export default function ScorePanel({ totalStrength, opponentStrength, roundsWon,
     </div>
   );
 }
+
+export default memo(ScorePanel);

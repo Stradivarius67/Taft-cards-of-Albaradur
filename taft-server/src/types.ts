@@ -127,9 +127,12 @@ export interface GameState {
   redrawsDone: number[];
   partisansPending?: boolean;
   lastRoundLoser?: number | null;
-  pendingAction?: 'informant_choice' | 'roots_move' | null;
+  pendingAction?: 'medic_choice' | 'informant_choice' | 'roots_move' | null;
   pendingActionPlayer?: number;
+  pendingMedicCardIds?: string[];
   informantRevealed?: Card[];
+  /** Result captured before the field is cleared at the end of a round. */
+  lastRoundResult?: { round: number; winner: number | null; scores: [number, number] };
 }
 
 // --- Эмоции ---
@@ -148,12 +151,19 @@ export interface Room {
   code: string;
   gameState: GameState;
   createdAt: number;
+  lastActivityAt: number;
   playerSockets: string[];
+  playerTokens: string[];
+  previousPlayerTokens: Array<{ token: string; expiresAt: number } | null>;
   spectatorSockets: string[];
   disconnectTimers: Map<string, ReturnType<typeof setTimeout>>;
+  timedOutPlayers: Set<number>;
+  factionSelections: Set<number>;
   openHands: boolean;
   mutator: ArenaMutator;
   lastEmote?: { [playerIndex: number]: number };
+  lastEmittedRoundResult?: number;
+  lastPartisansPromptRound?: number;
 }
 
 // --- Наблюдатель ---
@@ -191,6 +201,16 @@ export interface SpectatorGameState {
 // --- Socket events ---
 export interface ServerToClientEvents {
   room_created: (data: { code: string }) => void;
+  session_ready: (data: { code: string; resumeToken: string }) => void;
+  session_invalid: (data: { message: string }) => void;
+  lobby_restored: (data: {
+    code: string;
+    phase: 'waiting' | 'faction_select';
+    playerIndex: 0 | 1;
+    selectedFaction: FactionId | null;
+    opponentConnected: boolean;
+    opponentReady: boolean;
+  }) => void;
   player_joined: (data: Record<string, never>) => void;
   faction_selected: (data: { playerIndex: number; faction: FactionId }) => void;
   game_started: (data: { state: unknown }) => void;
@@ -225,6 +245,6 @@ export interface ClientToServerEvents {
   activate_leader: (data: { targetRow?: CardRow }) => void;
   informant_choice: (data: { cardId: string }) => void;
   roots_move: (data: { moves: { cardId: string; toRow: CardRow }[] }) => void;
-  reconnect: (data: { code: string }) => void;
+  reconnect: (data: { code: string; resumeToken: string }) => void;
   send_emote: (data: { emoteId: EmoteId }) => void;
 }

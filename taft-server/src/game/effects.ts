@@ -69,11 +69,11 @@ export function applyMedicChoice(
   playerIndex: number,
   cardId: string | null
 ): GameState {
-  if (!cardId) return state;
-
   const s = cloneState(state);
+  if (!cardId) return s;
+
   const player = s.players[playerIndex];
-  const idx = player.discard.findIndex(c => c.id === cardId);
+  const idx = player.discard.findIndex(c => c.id === cardId && c.type === 'unit');
   if (idx === -1) return s;
 
   const [card] = player.discard.splice(idx, 1);

@@ -77,7 +77,11 @@ const FACTIONS: {
 ];
 
 export default function FactionSelect() {
-  const { selectedFaction, factionConfirmed, opponentReady, error, goHome } = useLobbyStore();
+  const selectedFaction = useLobbyStore(s => s.selectedFaction);
+  const factionConfirmed = useLobbyStore(s => s.factionConfirmed);
+  const opponentReady = useLobbyStore(s => s.opponentReady);
+  const error = useLobbyStore(s => s.error);
+  const goHome = useLobbyStore(s => s.goHome);
   const selectFaction = useLobbyStore(s => s.selectFaction);
   const confirmFaction = useLobbyStore(s => s.confirmFaction);
 

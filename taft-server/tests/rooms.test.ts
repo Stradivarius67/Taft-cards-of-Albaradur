@@ -87,13 +87,82 @@ describe('RoomManager', () => {
     it('should return null for unknown socket', () => {
       expect(manager.getRoomBySocket('unknown')).toBeNull();
     });
+
+    it('should index joined players and spectators', () => {
+      const room = manager.createRoom('socket1');
+      manager.joinRoom(room.code, 'socket2');
+      manager.joinAsSpectator(room.code, 'spectator1');
+
+      expect(manager.getRoomBySocket('socket2')?.code).toBe(room.code);
+      expect(manager.getRoomBySocket('spectator1')?.code).toBe(room.code);
+      expect(manager.isSpectator('spectator1')).toBe(true);
+    });
+
+    it('should remove spectators from the reverse index', () => {
+      const room = manager.createRoom('socket1');
+      manager.joinRoom(room.code, 'socket2');
+      manager.joinAsSpectator(room.code, 'spectator1');
+
+      expect(manager.removeSpectator('spectator1')?.code).toBe(room.code);
+      expect(manager.getRoomBySocket('spectator1')).toBeNull();
+      expect(manager.isSpectator('spectator1')).toBe(false);
+    });
   });
 
   describe('deleteRoom', () => {
     it('should remove room', () => {
       const room = manager.createRoom('socket1');
+      manager.joinRoom(room.code, 'socket2');
       manager.deleteRoom(room.code);
       expect(manager.getRoom(room.code)).toBeNull();
+      expect(manager.getRoomBySocket('socket1')).toBeNull();
+      expect(manager.getRoomBySocket('socket2')).toBeNull();
+    });
+  });
+
+  describe('reconnect', () => {
+    it('should replace the socket in the reverse index', () => {
+      const room = manager.createRoom('socket1');
+      manager.joinRoom(room.code, 'socket2');
+
+      const resumeToken = manager.getResumeToken(room, 1)!;
+      expect(manager.reconnect(room.code, resumeToken, 'socket2-new')).not.toBeNull();
+      expect(manager.getRoomBySocket('socket2')).toBeNull();
+      expect(manager.getRoomBySocket('socket2-new')?.code).toBe(room.code);
+      expect(manager.getResumeToken(room, 1)).not.toBe(resumeToken);
+    });
+
+    it('accepts the previous token briefly when renewed credentials were not delivered', () => {
+      const room = manager.createRoom('socket1');
+      manager.joinRoom(room.code, 'socket2');
+
+      const resumeToken = manager.getResumeToken(room, 1)!;
+      manager.reconnect(room.code, resumeToken, 'socket2-new');
+      const renewedToken = manager.getResumeToken(room, 1)!;
+
+      expect(manager.reconnect(room.code, resumeToken, 'socket2-retry')).toBe(room);
+      expect(manager.getResumeToken(room, 1)).toBe(renewedToken);
+      expect(manager.getRoomBySocket('socket2-new')).toBeNull();
+      expect(manager.getRoomBySocket('socket2-retry')).toBe(room);
+    });
+
+    it('should reject an invalid resume token', () => {
+      const room = manager.createRoom('socket1');
+      manager.joinRoom(room.code, 'socket2');
+
+      expect(manager.reconnect(room.code, 'invalid-token', 'attacker')).toBeNull();
+      expect(manager.getRoomBySocket('attacker')).toBeNull();
+      expect(manager.getRoomBySocket('socket2')?.code).toBe(room.code);
+    });
+
+    it('should reject a reconnect from a socket already assigned to a room', () => {
+      const room = manager.createRoom('socket1');
+      manager.joinRoom(room.code, 'socket2');
+      const otherRoom = manager.createRoom('already-assigned');
+      const resumeToken = manager.getResumeToken(room, 1)!;
+
+      expect(manager.reconnect(room.code, resumeToken, 'already-assigned')).toBeNull();
+      expect(manager.getRoomBySocket('already-assigned')).toBe(otherRoom);
     });
   });
 

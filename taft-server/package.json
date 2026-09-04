@@ -7,12 +7,12 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "taft-cards-of-albaradur": "file:..",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",

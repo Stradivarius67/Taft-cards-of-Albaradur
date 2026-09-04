@@ -9,8 +9,22 @@ import {
   applyScorch, applyMuster, applyDrain, applyLock,
 } from './effects.js';
 
+export interface StrengthInfo {
+  melee: number;
+  ranged: number;
+  siege: number;
+  total: number;
+}
+
 function cloneState(state: GameState): GameState {
   return structuredClone(state);
+}
+
+function removePlayedCard(state: GameState, playerIndex: number, cardId: string): Card | null {
+  const hand = state.players[playerIndex].hand;
+  const index = hand.findIndex(card => card.id === cardId);
+  if (index === -1) return null;
+  return hand.splice(index, 1)[0];
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -64,6 +78,8 @@ export class GameEngine {
     s.weather = { frost: false, fog: false, rain: false };
     s.redrawsDone = [];
     s.pendingAction = null;
+    s.pendingActionPlayer = undefined;
+    s.pendingMedicCardIds = undefined;
     s.log = [...s.log, 'Game started, phase: redraw'];
     return s;
   }
@@ -127,6 +143,9 @@ export class GameEngine {
     if (state.currentPlayerIndex !== playerIndex) {
       return { state, error: 'Сейчас не ваш ход' };
     }
+    if (state.pendingAction) {
+      return { state, error: 'Сначала завершите текущее действие' };
+    }
 
     const player = state.players[playerIndex];
     if (player.passed) {
@@ -144,89 +163,99 @@ export class GameEngine {
       return { state, error: 'Нужно выбрать ряд для этой карты' };
     }
 
-    let s = cloneState(state);
-    const sCard = s.players[playerIndex].hand[cardIdx];
-    s.players[playerIndex].hand.splice(cardIdx, 1);
-
     // Weather
-    if (sCard.type === 'weather') {
-      if (sCard.ability === 'clear') {
-        s = applyClear(s, sCard, playerIndex);
-      } else if (sCard.ability === 'frost' || sCard.ability === 'fog' || sCard.ability === 'rain') {
-        s = applyWeather(s, sCard.ability, sCard, playerIndex);
+    if (card.type === 'weather') {
+      let s: GameState;
+      if (card.ability === 'clear') {
+        s = applyClear(state, card, playerIndex);
+      } else if (card.ability === 'frost' || card.ability === 'fog' || card.ability === 'rain') {
+        s = applyWeather(state, card.ability, card, playerIndex);
+      } else {
+        return { state, error: 'Неизвестный погодный эффект' };
       }
+      removePlayedCard(s, playerIndex, cardId);
       this.advanceTurn(s);
       return { state: s };
     }
 
     // Special: decoy
-    if (sCard.ability === 'decoy') {
+    if (card.ability === 'decoy') {
       if (!targetRow) {
         // Возвращаем карту в руку — играем с тем же объектом state, который не мутирован
         return { state, error: 'Приманка требует выбора цели' };
       }
-      const result = applyDecoy(s, playerIndex, targetRow, sCard);
+      const result = applyDecoy(state, playerIndex, targetRow, card);
       if (result.error) {
         // Откат: возвращаем decoy в исходное состояние руки
         return { state, error: result.error };
       }
+      removePlayedCard(result.state, playerIndex, cardId);
       this.advanceTurn(result.state);
       return { state: result.state };
     }
 
     // Special: horn
-    if (sCard.ability === 'horn') {
+    if (card.ability === 'horn') {
       if (!targetRow) {
         return { state, error: 'Рожок требует выбора ряда' };
       }
-      const result = applyHorn(s, playerIndex, targetRow, sCard);
+      const result = applyHorn(state, playerIndex, targetRow, card);
       if (result.error) {
         return { state, error: result.error };
       }
+      removePlayedCard(result.state, playerIndex, cardId);
       this.advanceTurn(result.state);
       return { state: result.state };
     }
 
     // Unit: spy
-    if (sCard.ability === 'spy') {
-      s = applySpy(s, playerIndex, sCard);
+    if (card.ability === 'spy') {
+      const s = applySpy(state, playerIndex, card);
+      removePlayedCard(s, playerIndex, cardId);
       this.advanceTurn(s);
       return { state: s };
     }
 
     // Unit: medic
-    if (sCard.ability === 'medic') {
-      const result = applyMedic(s, playerIndex, sCard);
-      this.advanceTurn(result.state);
+    if (card.ability === 'medic') {
+      const result = applyMedic(state, playerIndex, card);
+      removePlayedCard(result.state, playerIndex, cardId);
       if (result.pendingChoice.length > 0) {
+        result.state.pendingAction = 'medic_choice';
+        result.state.pendingActionPlayer = playerIndex;
+        result.state.pendingMedicCardIds = result.pendingChoice.map(card => card.id);
         return { state: result.state, pendingChoice: result.pendingChoice };
       }
+      this.advanceTurn(result.state);
       return { state: result.state };
     }
 
     // Special: scorch (карта-special без поля, без выбора цели)
-    if (sCard.ability === 'scorch') {
-      s = applyScorch(s, playerIndex, sCard);
+    if (card.ability === 'scorch') {
+      const s = applyScorch(state, playerIndex, card);
+      removePlayedCard(s, playerIndex, cardId);
       this.advanceTurn(s);
       return { state: s };
     }
 
     // Unit/special: muster (одноимённые из колоды на поле)
-    if (sCard.ability === 'muster') {
-      s = applyMuster(s, playerIndex, sCard, targetRow);
+    if (card.ability === 'muster') {
+      const s = applyMuster(state, playerIndex, card, targetRow);
+      removePlayedCard(s, playerIndex, cardId);
       this.advanceTurn(s);
       return { state: s };
     }
 
     // Unit: drain (отнимает 2 силы у юнита противника в том же ряду)
-    if (sCard.ability === 'drain') {
-      s = applyDrain(s, playerIndex, sCard, targetRow);
+    if (card.ability === 'drain') {
+      const s = applyDrain(state, playerIndex, card, targetRow);
+      removePlayedCard(s, playerIndex, cardId);
       this.advanceTurn(s);
       return { state: s };
     }
 
     // Unit: lock (блокирует ability карты на поле противника)
-    if (sCard.ability === 'lock') {
+    if (card.ability === 'lock') {
       if (!targetRow) {
         return { state, error: 'Lock требует выбора цели на поле противника' };
       }
@@ -234,15 +263,19 @@ export class GameEngine {
       // через тот же параметр (см. play_card на клиенте: для lock он содержит
       // cardId жертвы). Это сделано чтобы не плодить новых полей в protocol.
       // В качестве ряда для самого lock-юнита используем его card.row.
-      const result = applyLock(s, playerIndex, sCard, targetRow);
+      const result = applyLock(state, playerIndex, card, targetRow);
       if (result.error) {
         return { state, error: result.error };
       }
+      removePlayedCard(result.state, playerIndex, cardId);
       this.advanceTurn(result.state);
       return { state: result.state };
     }
 
     // Unit: обычная
+    const s = cloneState(state);
+    const sCard = s.players[playerIndex].hand[cardIdx];
+    s.players[playerIndex].hand.splice(cardIdx, 1);
     const row = (sCard.flexibleRow && targetRow) ? targetRow : sCard.row!;
     s.players[playerIndex].field[row].push(sCard);
     s.log.push(`Player ${playerIndex} played "${sCard.name}" to ${row}`);
@@ -255,24 +288,60 @@ export class GameEngine {
     state: GameState,
     playerIndex: number,
     cardId: string | null
-  ): GameState {
-    return applyMedicChoice(state, playerIndex, cardId);
+  ): { state: GameState; error?: string } {
+    if (state.pendingAction !== 'medic_choice' || state.pendingActionPlayer !== playerIndex) {
+      return { state, error: 'Нет ожидающего выбора медика' };
+    }
+    if (cardId !== null && !state.pendingMedicCardIds?.includes(cardId)) {
+      return { state, error: 'Эту карту нельзя вернуть медиком' };
+    }
+
+    const next = applyMedicChoice(state, playerIndex, cardId);
+    next.pendingAction = null;
+    next.pendingActionPlayer = undefined;
+    next.pendingMedicCardIds = undefined;
+    this.advanceTurn(next);
+    return { state: next };
+  }
+
+  cancelPendingAction(state: GameState, playerIndex: number): GameState {
+    if (!state.pendingAction || state.pendingActionPlayer !== playerIndex) return state;
+
+    const next = cloneState(state);
+    next.pendingAction = null;
+    next.pendingActionPlayer = undefined;
+    next.pendingMedicCardIds = undefined;
+    next.informantRevealed = undefined;
+    next.log.push(`Player ${playerIndex} pending action cancelled`);
+    return next;
   }
 
   pass(state: GameState, playerIndex: number): GameState {
     if (state.phase !== 'playing') return state;
     if (state.currentPlayerIndex !== playerIndex) return state;
+    if (state.pendingAction) return state;
+
+    return this.forcePass(state, playerIndex);
+  }
+
+  /** Pass a disconnected player even when it is not currently their turn. */
+  forcePass(state: GameState, playerIndex: number): GameState {
+    if (state.phase !== 'playing' || state.players[playerIndex]?.passed) return state;
 
     const s = cloneState(state);
+    if (s.pendingActionPlayer === playerIndex) {
+      s.pendingAction = null;
+      s.pendingActionPlayer = undefined;
+      s.pendingMedicCardIds = undefined;
+      s.informantRevealed = undefined;
+      s.log.push(`Player ${playerIndex} pending action cancelled`);
+    }
     s.players[playerIndex].passed = true;
     s.log.push(`Player ${playerIndex} passed`);
 
     const opponentIdx = playerIndex === 0 ? 1 : 0;
-    if (s.players[opponentIdx].passed) {
-      return this.resolveRound(s);
-    }
-
-    this.advanceTurn(s);
+    if (s.players[opponentIdx].passed) return this.resolveRound(s);
+    if (s.currentPlayerIndex === playerIndex) this.advanceTurn(s);
     return s;
   }
 
@@ -310,6 +379,9 @@ export class GameEngine {
     }
     if (state.currentPlayerIndex !== playerIndex) {
       return { state, error: 'Сейчас не ваш ход' };
+    }
+    if (state.pendingAction) {
+      return { state, error: 'Сначала завершите текущее действие' };
     }
     if (state.players[playerIndex].leaderUsed) {
       return { state, error: 'Способность лидера уже использована' };
@@ -458,10 +530,6 @@ export class GameEngine {
   ): { state: GameState; error?: string } {
     if (state.pendingAction !== 'roots_move' || state.pendingActionPlayer !== playerIndex) {
       return { state, error: 'Нет ожидающих действий корней' };
-    }
-
-    if (moves.length === 0) {
-      return { state, error: 'Нужно переместить хотя бы 1 карту' };
     }
 
     if (moves.length > 2) {
@@ -666,33 +734,51 @@ export class GameEngine {
     return rowTotal;
   }
 
-  calculatePlayerStrength(player: PlayerState, weather: WeatherEffects, mutator: ArenaMutator = 'none'): number {
+  calculateStrength(
+    player: PlayerState,
+    weather: WeatherEffects,
+    mutator: ArenaMutator = 'none'
+  ): StrengthInfo {
     const melee = this.calculateRowStrength(player.field.melee, weather.frost, player.hornActive.melee, mutator);
     const ranged = this.calculateRowStrength(player.field.ranged, weather.fog, player.hornActive.ranged, mutator);
     const siege = this.calculateRowStrength(player.field.siege, weather.rain, player.hornActive.siege, mutator);
-    return melee + ranged + siege;
+    return { melee, ranged, siege, total: melee + ranged + siege };
+  }
+
+  calculatePlayerStrength(player: PlayerState, weather: WeatherEffects, mutator: ArenaMutator = 'none'): number {
+    return this.calculateStrength(player, weather, mutator).total;
+  }
+
+  getRoundResult(state: GameState): { winner: number | null; scores: [number, number] } {
+    const s0 = this.calculatePlayerStrength(state.players[0], state.weather, state.mutator);
+    const s1 = this.calculatePlayerStrength(state.players[1], state.weather, state.mutator);
+    let winner: number | null = null;
+
+    if (s0 > s1) winner = 0;
+    else if (s1 > s0) winner = 1;
+    else {
+      const imperialIndex = state.players.findIndex(player => player.faction === 'imperial_dogs');
+      if (imperialIndex !== -1) winner = imperialIndex;
+    }
+
+    return { winner, scores: [s0, s1] };
   }
 
   resolveRound(state: GameState): GameState {
     let s = cloneState(state);
-    const s0 = this.calculatePlayerStrength(s.players[0], s.weather, s.mutator);
-    const s1 = this.calculatePlayerStrength(s.players[1], s.weather, s.mutator);
+    const { winner: roundWinner, scores: [s0, s1] } = this.getRoundResult(s);
+    s.lastRoundResult = { round: s.round, winner: roundWinner, scores: [s0, s1] };
 
     s.log.push(`Round ${s.round} scores: P0=${s0}, P1=${s1}`);
 
-    let roundWinner: number | null = null;
-
     if (s0 > s1) {
       s.players[0].roundsWon++;
-      roundWinner = 0;
     } else if (s1 > s0) {
       s.players[1].roundsWon++;
-      roundWinner = 1;
     } else {
       const idIdx = s.players.findIndex(p => p.faction === 'imperial_dogs');
       if (idIdx !== -1) {
         s.players[idIdx].roundsWon++;
-        roundWinner = idIdx;
         s.log.push('Imperial Dogs win the tie');
       } else {
         s.log.push('Tie — neither player wins the round');
@@ -722,19 +808,19 @@ export class GameEngine {
 
     if (s.players[0].roundsWon >= 2 || s.players[1].roundsWon >= 2) {
       s.phase = 'game_over';
-      s = this.clearField(s);
+      this.clearField(s);
       s.log.push('Game over');
       return s;
     }
 
     if (s.round >= 3) {
       s.phase = 'game_over';
-      s = this.clearField(s);
+      this.clearField(s);
       s.log.push('Game over after 3 rounds');
       return s;
     }
 
-    s = this.clearField(s);
+    this.clearField(s);
 
     s.round = (s.round + 1) as 1 | 2 | 3;
     s.players[0].passed = false;
@@ -768,9 +854,7 @@ export class GameEngine {
     return s;
   }
 
-  private clearField(state: GameState): GameState {
-    const s = cloneState(state);
-
+  private clearField(s: GameState): void {
     for (let i = 0; i < 2; i++) {
       const player = s.players[i];
       const allFieldCards: { card: Card; row: CardRow }[] = [];
@@ -816,7 +900,6 @@ export class GameEngine {
       player.hornActive = { melee: false, ranged: false, siege: false };
     }
 
-    return s;
   }
 
   getVisibleState(state: GameState, forPlayerIndex: number): object {
@@ -831,6 +914,8 @@ export class GameEngine {
       state.currentPlayerIndex === forPlayerIndex &&
       !me.leaderUsed &&
       !me.passed;
+    const myStrength = this.calculateStrength(me, state.weather, state.mutator);
+    const opponentStrength = this.calculateStrength(opp, state.weather, state.mutator);
 
     return {
       id: state.id,
@@ -867,18 +952,8 @@ export class GameEngine {
         leaderUsed: opp.leaderUsed,
         leaderAbility: oppFaction.leader.ability,
       },
-      myStrength: {
-        melee: this.calculateRowStrength(me.field.melee, state.weather.frost, me.hornActive.melee, state.mutator),
-        ranged: this.calculateRowStrength(me.field.ranged, state.weather.fog, me.hornActive.ranged, state.mutator),
-        siege: this.calculateRowStrength(me.field.siege, state.weather.rain, me.hornActive.siege, state.mutator),
-        total: this.calculatePlayerStrength(me, state.weather, state.mutator),
-      },
-      opponentStrength: {
-        melee: this.calculateRowStrength(opp.field.melee, state.weather.frost, opp.hornActive.melee, state.mutator),
-        ranged: this.calculateRowStrength(opp.field.ranged, state.weather.fog, opp.hornActive.ranged, state.mutator),
-        siege: this.calculateRowStrength(opp.field.siege, state.weather.rain, opp.hornActive.siege, state.mutator),
-        total: this.calculatePlayerStrength(opp, state.weather, state.mutator),
-      },
+      myStrength,
+      opponentStrength,
       log: state.log.slice(-20),
     };
   }
@@ -906,9 +981,10 @@ export class GameEngine {
     if (current.hand.length === 0 && current.leaderUsed && !current.passed) {
       current.passed = true;
       state.log.push(`Player ${state.currentPlayerIndex} auto-passed (no cards, leader used)`);
-      // If opponent also passed, don't switch turn — resolveRound will handle it
       const opponentIdx = state.currentPlayerIndex === 0 ? 1 : 0;
-      if (!state.players[opponentIdx].passed) {
+      if (state.players[opponentIdx].passed) {
+        Object.assign(state, this.resolveRound(state));
+      } else {
         state.currentPlayerIndex = opponentIdx as 0 | 1;
       }
     }

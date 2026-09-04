@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
 import type { LeaderAbilityId } from '../../types/game';
@@ -14,7 +14,7 @@ const LEADER_NAMES: Record<LeaderAbilityId, string> = {
   witches_curse: 'Проклятие Гризельды',
 };
 
-export default function ActionBar() {
+function ActionBar() {
   const gs = useGameStore(s => s.gameState);
   const isMyTurn = useGameStore(s => s.isMyTurn);
   const pass = useGameStore(s => s.pass);
@@ -24,12 +24,14 @@ export default function ActionBar() {
   const sendEmoteAction = useGameStore(s => s.sendEmote);
   const emoteCooldown = useGameStore(s => s.emoteCooldown);
   const isMobile = useGameStore(s => s.isMobile);
+  const isConnected = useGameStore(s => s.isConnected);
+  const isProcessing = useGameStore(s => s.isProcessing);
   const [confirmPass, setConfirmPass] = useState(false);
   const [emotePanelOpen, setEmotePanelOpen] = useState(false);
 
   if (!gs) return null;
 
-  const myTurn = isMyTurn();
+  const myTurn = isMyTurn() && isConnected;
   const me = gs.me;
   const factionColor = FACTION_COLORS[me.faction];
 
@@ -109,7 +111,7 @@ export default function ActionBar() {
       <button
         className={`${styles.btn} ${styles.passBtn}`}
         onClick={handlePass}
-        disabled={me.passed}
+        disabled={me.passed || isProcessing || !isConnected}
       >
         {confirmPass ? 'Подтвердить пас?' : 'Пас'}
       </button>
@@ -119,6 +121,7 @@ export default function ActionBar() {
           whileHover={{ boxShadow: `0 0 12px ${factionColor}44` }}
           className={`${styles.btn} ${styles.leaderBtn}`}
           onClick={handleLeader}
+          disabled={isProcessing || !isConnected}
         >
           {isMobile ? 'Лидер' : (LEADER_NAMES[me.leaderAbility as LeaderAbilityId] ?? 'Способность лидера')}
         </motion.button>
@@ -137,3 +140,5 @@ export default function ActionBar() {
     </div>
   );
 }
+
+export default memo(ActionBar);

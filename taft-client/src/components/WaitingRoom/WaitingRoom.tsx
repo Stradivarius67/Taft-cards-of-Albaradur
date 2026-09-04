@@ -1,13 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLobbyStore } from '../../store/lobbyStore';
 import { MUTATORS } from '../../data/mutators';
 import styles from './WaitingRoom.module.css';
 
 export default function WaitingRoom() {
-  const { roomCode, opponentConnected, error, goHome } = useLobbyStore();
+  const roomCode = useLobbyStore(s => s.roomCode);
+  const opponentConnected = useLobbyStore(s => s.opponentConnected);
+  const error = useLobbyStore(s => s.error);
+  const goHome = useLobbyStore(s => s.goHome);
   const selectedMutator = useLobbyStore(s => s.selectedMutator);
   const [copied, setCopied] = useState(false);
   const [dots, setDots] = useState('');
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+  }, []);
 
   // Animate waiting dots
   useEffect(() => {
@@ -33,7 +41,11 @@ export default function WaitingRoom() {
     try {
       await navigator.clipboard.writeText(roomCode);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => {
+        setCopied(false);
+        copyTimerRef.current = null;
+      }, 2000);
     } catch {
       // Fallback: do nothing
     }

@@ -10,6 +10,8 @@ export default function RowPicker() {
   const rowPickerContext = useGameStore(s => s.rowPickerContext);
   const playSelectedCard = useGameStore(s => s.playSelectedCard);
   const activateLeader = useGameStore(s => s.activateLeader);
+  const addRootsMove = useGameStore(s => s.addRootsMove);
+  const selectedCardId = useGameStore(s => s.selectedCardId);
   const closeRowPicker = useGameStore(s => s.closeRowPicker);
   const myStrength = useGameStore(s => s.myStrength);
 
@@ -19,6 +21,9 @@ export default function RowPicker() {
   const handlePick = (row: CardRow) => {
     if (rowPickerContext === 'leader_rally' || rowPickerContext === 'leader_curse') {
       activateLeader({ targetRow: row });
+      closeRowPicker();
+    } else if (rowPickerContext === 'roots' && selectedCardId) {
+      addRootsMove(selectedCardId, row);
       closeRowPicker();
     } else {
       playSelectedCard(row);

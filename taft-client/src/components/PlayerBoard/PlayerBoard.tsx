@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Card, CardRow, PlayerField, HornState, WeatherEffects, StrengthInfo } from '../../types/game';
 import Row from '../Row/Row';
 import styles from './PlayerBoard.module.css';
@@ -11,6 +12,9 @@ interface Props {
   onRowClick?: (row: CardRow) => void;
   decoyTargetMode?: boolean;
   onDecoyTarget?: (cardId: string) => void;
+  rootsTargetMode?: boolean;
+  selectedRootsIds?: string[];
+  onRootsTarget?: (cardId: string) => void;
 }
 
 const SELF_ORDER: CardRow[] = ['melee', 'ranged', 'siege'];
@@ -22,9 +26,10 @@ const WEATHER_MAP: Record<CardRow, keyof WeatherEffects> = {
   siege: 'rain',
 };
 
-export default function PlayerBoard({
+function PlayerBoard({
   player, field, hornActive, weather, strength,
   onRowClick, decoyTargetMode, onDecoyTarget,
+  rootsTargetMode, selectedRootsIds, onRootsTarget,
 }: Props) {
   const order = player === 'self' ? SELF_ORDER : OPP_ORDER;
   const isSelf = player === 'self';
@@ -43,8 +48,13 @@ export default function PlayerBoard({
           onClick={isSelf && onRowClick ? () => onRowClick(rowType) : undefined}
           decoyTargetMode={isSelf && decoyTargetMode}
           onCardClick={isSelf && onDecoyTarget ? onDecoyTarget : undefined}
+          rootsTargetMode={isSelf && rootsTargetMode}
+          selectedRootsIds={selectedRootsIds}
+          onRootsTarget={isSelf && onRootsTarget ? onRootsTarget : undefined}
         />
       ))}
     </div>
   );
 }
+
+export default memo(PlayerBoard);

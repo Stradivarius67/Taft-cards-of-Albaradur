@@ -1,5 +1,6 @@
 import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
+import { disconnect } from '../../services/socket';
 import { FACTION_NAMES, FACTION_COLORS, ROW_LABELS } from '../../types/game';
 import type { SpectatorPlayerView, SpectatorGameState, CardRow, StrengthInfo, Card } from '../../types/game';
 import Row from '../Row/Row';
@@ -191,7 +192,7 @@ function SpectatorGameOver() {
       <div className={styles.modal}>
         <div className={styles.modalTitle}>{titleText}</div>
         <div className={styles.modalScore}>Раунды: {myRounds} — {opponentRounds}</div>
-        <button className={styles.modalBtn} onClick={() => window.location.reload()}>
+        <button className={styles.modalBtn} onClick={() => { disconnect(); window.location.reload(); }}>
           Вернуться на главную
         </button>
       </div>

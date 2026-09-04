@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import type { Card } from '../../types/game';
 import { ABILITY_LABELS, FACTION_COLORS, ROW_LABELS } from '../../types/game';
@@ -13,7 +14,7 @@ interface Props {
   onClick: () => void;
 }
 
-export default function HandCard({ card, isSelected, canPlay, onClick }: Props) {
+function HandCard({ card, isSelected, canPlay, onClick }: Props) {
   const setDetailCard = useGameStore(s => s.setDetailCard);
   const isMobile = useGameStore(s => s.isMobile);
   const longPressHandlers = useLongPress(() => setDetailCard(card));
@@ -44,9 +45,14 @@ export default function HandCard({ card, isSelected, canPlay, onClick }: Props) 
         borderColor: isSelected ? undefined : (typeClass ? undefined : factionColor),
         backgroundImage: artUrl ? `url(${artUrl})` : undefined,
       }}
-      onClick={canPlay ? onClick : undefined}
+      onClick={canPlay ? () => {
+        if (!longPressHandlers.shouldSuppressClick()) onClick();
+      } : undefined}
       onContextMenu={e => { e.preventDefault(); setDetailCard(card); }}
-      {...longPressHandlers}
+      onTouchStart={longPressHandlers.onTouchStart}
+      onTouchEnd={longPressHandlers.onTouchEnd}
+      onTouchMove={longPressHandlers.onTouchMove}
+      onTouchCancel={longPressHandlers.onTouchCancel}
     >
       <span className={styles.strengthBadge}>
         {card.type === 'weather' ? '☁' : card.strength}
@@ -69,3 +75,5 @@ export default function HandCard({ card, isSelected, canPlay, onClick }: Props) 
     </motion.div>
   );
 }
+
+export default memo(HandCard);

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { useLobbyStore } from '../store/lobbyStore';
-import { setupListeners } from '../services/socket';
+import { clearResumeSession, connect, hasResumeSession, requestSessionResume, saveResumeSession, setupListeners } from '../services/socket';
 import type { SpectatorGameState } from '../types/game';
 
 export function useSocket() {
@@ -69,6 +69,7 @@ export function useSocket() {
       },
       onConnect: () => {
         useGameStore.getState().setConnected(true);
+        requestSessionResume();
       },
       onDisconnect: () => {
         useGameStore.getState().setConnected(false);
@@ -77,6 +78,19 @@ export function useSocket() {
         const lobby = useLobbyStore.getState();
         lobby.setRoomCode(code);
         lobby.setScreen('waiting');
+      },
+      onSessionReady: (session) => {
+        saveResumeSession(session);
+      },
+      onSessionInvalid: ({ message }) => {
+        clearResumeSession();
+        useGameStore.getState().reset();
+        useLobbyStore.getState().reset();
+        useLobbyStore.getState().setError(message);
+      },
+      onLobbyRestored: (data) => {
+        useGameStore.getState().reset();
+        useLobbyStore.getState().restoreSession(data);
       },
       onPlayerJoined: () => {
         const lobby = useLobbyStore.getState();
@@ -98,7 +112,14 @@ export function useSocket() {
       onEmote: ({ playerIndex, emoteId, faction }) => {
         useGameStore.getState().showEmote(playerIndex, emoteId, faction);
       },
+      onConnectError: () => {
+        const message = 'Не удалось подключиться к серверу';
+        useGameStore.getState().setConnected(false);
+        useLobbyStore.getState().setError(message);
+      },
     });
+
+    if (hasResumeSession()) connect();
 
     return cleanup;
   }, []);

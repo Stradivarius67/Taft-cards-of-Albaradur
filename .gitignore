@@ -4,9 +4,13 @@ taft-server/public/
 taft-server/node_modules/
 taft-client/node_modules/
 taft-client/dist/
+taft-client/*.tsbuildinfo
+taft-server/*.tsbuildinfo
 .env
 .env.local
 *.log
+.claude/settings.local.json
+launcher/dist/
 
 # Исходные PNG-арты (рабочие ассеты лежат в taft-client/src/assets)
 Графика/

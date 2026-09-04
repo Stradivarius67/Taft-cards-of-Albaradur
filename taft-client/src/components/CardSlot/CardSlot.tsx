@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import type { Card } from '../../types/game';
 import { ABILITY_LABELS, FACTION_COLORS } from '../../types/game';
@@ -14,7 +15,7 @@ interface Props {
   onClick?: () => void;
 }
 
-export default function CardSlot({ card, isWeatherAffected, isOpponent, highlight, onClick }: Props) {
+function CardSlot({ card, isWeatherAffected, isOpponent, highlight, onClick }: Props) {
   const setDetailCard = useGameStore(s => s.setDetailCard);
   const isMobile = useGameStore(s => s.isMobile);
   const longPressHandlers = useLongPress(() => setDetailCard(card));
@@ -42,9 +43,14 @@ export default function CardSlot({ card, isWeatherAffected, isOpponent, highligh
         borderColor: abilityClass ? undefined : factionColor,
         backgroundImage: artUrl ? `url(${artUrl})` : undefined,
       }}
-      onClick={onClick}
+      onClick={onClick ? () => {
+        if (!longPressHandlers.shouldSuppressClick()) onClick();
+      } : undefined}
       onContextMenu={e => { e.preventDefault(); setDetailCard(card); }}
-      {...longPressHandlers}
+      onTouchStart={longPressHandlers.onTouchStart}
+      onTouchEnd={longPressHandlers.onTouchEnd}
+      onTouchMove={longPressHandlers.onTouchMove}
+      onTouchCancel={longPressHandlers.onTouchCancel}
     >
       <span className={`${styles.strengthBadge} ${isWeatherAffected ? styles.weatheredBadge : ''}`}>
         {isWeatherAffected && card.type === 'unit' ? 1 : card.strength + (card.strengthModifier ?? 0)}
@@ -60,3 +66,5 @@ export default function CardSlot({ card, isWeatherAffected, isOpponent, highligh
     </motion.div>
   );
 }
+
+export default memo(CardSlot);

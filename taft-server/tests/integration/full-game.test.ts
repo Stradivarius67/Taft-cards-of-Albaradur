@@ -11,6 +11,7 @@ import { setupSocketHandlers } from '../../src/socket/handlers.js';
 
 let httpServer: ReturnType<typeof createServer>;
 let ioServer: Server;
+let roomManager: RoomManager;
 let port: number;
 
 function createClient(): ClientSocket {
@@ -57,8 +58,8 @@ beforeAll(async () => {
   app.use(cors());
   httpServer = createServer(app);
   ioServer = new Server(httpServer, { cors: { origin: '*' } });
-  const manager = new RoomManager();
-  setupSocketHandlers(ioServer, manager);
+  roomManager = new RoomManager();
+  setupSocketHandlers(ioServer, roomManager);
 
   await new Promise<void>((resolve) => {
     httpServer.listen(0, () => {
@@ -70,6 +71,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  roomManager.destroy();
   ioServer.close();
   await new Promise<void>((resolve) => httpServer.close(() => resolve()));
 });
@@ -89,13 +91,16 @@ async function setupGame(faction1 = 'lion_guard', faction2 = 'imperial_dogs') {
 
   // Create room
   const roomCreated = waitFor<{ code: string }>(p1, 'room_created');
+  const p1Session = waitFor<{ code: string; resumeToken: string }>(p1, 'session_ready');
   p1.emit('create_room');
   const { code } = await roomCreated;
+  const session1 = await p1Session;
 
   // Join room
   const playerJoined = waitFor(p1, 'player_joined');
+  const p2Session = waitFor<{ code: string; resumeToken: string }>(p2, 'session_ready');
   p2.emit('join_room', { code });
-  await playerJoined;
+  const [, session2] = await Promise.all([playerJoined, p2Session]);
 
   // Select factions — listen for game_started BEFORE emitting
   const gs1 = waitFor<{ state: any }>(p1, 'game_started');
@@ -104,7 +109,7 @@ async function setupGame(faction1 = 'lion_guard', faction2 = 'imperial_dogs') {
   p2.emit('select_faction', { faction: faction2 });
 
   const [s1, s2] = await Promise.all([gs1, gs2]);
-  return { p1, p2, code, state1: s1.state, state2: s2.state };
+  return { p1, p2, code, state1: s1.state, state2: s2.state, session1, session2 };
 }
 
 async function doRedraw(p1: ClientSocket, p2: ClientSocket) {
@@ -171,6 +176,7 @@ describe('Integration: Full Game', () => {
     // Wait for round 2 or game_over on both
     const p1Round2 = waitForState(p1, s => s.round >= 2 || s.phase === 'game_over');
     const p2Round2 = waitForState(p2, s => s.round >= 2 || s.phase === 'game_over');
+    const roundResult = waitFor<{ winner: number | null; scores: [number, number] }>(p1, 'round_result');
 
     firstSocket.emit('pass');
     // Wait a bit to ensure ordering
@@ -178,6 +184,7 @@ describe('Integration: Full Game', () => {
     secondSocket.emit('pass');
 
     const [r1, r2] = await Promise.all([p1Round2, p2Round2]);
+    expect((await roundResult).scores).toEqual([0, 0]);
     expect(r1.round).toBeGreaterThanOrEqual(2);
     cleanup(p1, p2);
   });
@@ -305,6 +312,21 @@ describe('Integration: Invalid Actions', () => {
     await delay(200);
     cleanup(p1, p2);
   });
+
+  it('rejects malformed payloads without terminating the socket', async () => {
+    const { p1, p2 } = await setupGame();
+    const { state1 } = await doRedraw(p1, p2);
+    const activeSocket = state1.currentPlayerIndex === state1.myIndex ? p1 : p2;
+
+    const malformedError = waitFor<{ message: string }>(activeSocket, 'error');
+    activeSocket.emit('play_card', null as any);
+    expect((await malformedError).message).toContain('Некорректные данные');
+
+    const update = waitFor<{ state: any }>(activeSocket, 'state_update');
+    activeSocket.emit('pass');
+    expect((await update).state.me.passed).toBe(true);
+    cleanup(p1, p2);
+  });
 });
 
 describe('Integration: Effects via Socket.IO', () => {
@@ -388,6 +410,30 @@ describe('Integration: Effects via Socket.IO', () => {
 });
 
 describe('Integration: Disconnect', () => {
+  it('restores a waiting lobby without requiring a second player', async () => {
+    const host = createClient();
+    const connected = waitFor(host, 'connect');
+    host.connect();
+    await connected;
+
+    const created = waitFor<{ code: string }>(host, 'room_created');
+    const session = waitFor<{ code: string; resumeToken: string }>(host, 'session_ready');
+    host.emit('create_room');
+    const [{ code }, { resumeToken }] = await Promise.all([created, session]);
+    host.disconnect();
+    await delay(20);
+
+    const replacement = createClient();
+    const replacementConnected = waitFor(replacement, 'connect');
+    replacement.connect();
+    await replacementConnected;
+    const restored = waitFor<any>(replacement, 'lobby_restored');
+    replacement.emit('reconnect', { code: code.toLowerCase(), resumeToken });
+
+    expect(await restored).toMatchObject({ code, phase: 'waiting', playerIndex: 0 });
+    cleanup(replacement);
+  });
+
   it('opponent_disconnected event is sent', async () => {
     const { p1, p2 } = await setupGame();
     await doRedraw(p1, p2);
@@ -396,6 +442,83 @@ describe('Integration: Disconnect', () => {
     p1.disconnect();
     await disconnectPromise;
     p2.disconnect();
+  });
+
+  it('requires the private resume token and restores the correct player slot', async () => {
+    const { p1, p2, code, session1 } = await setupGame();
+    await doRedraw(p1, p2);
+
+    const disconnected = waitFor(p2, 'opponent_disconnected');
+    p1.disconnect();
+    await disconnected;
+
+    const attacker = createClient();
+    const attackerConnected = waitFor(attacker, 'connect');
+    attacker.connect();
+    await attackerConnected;
+    const rejected = waitFor<{ message: string }>(attacker, 'session_invalid');
+    attacker.emit('reconnect', { code, resumeToken: 'invalid-token' });
+    expect((await rejected).message).toContain('подтвердить');
+
+    const replacement = createClient();
+    const replacementConnected = waitFor(replacement, 'connect');
+    replacement.connect();
+    await replacementConnected;
+    const resumed = waitFor<{ code: string; resumeToken: string }>(replacement, 'session_ready');
+    const state = waitFor<{ state: any }>(replacement, 'state_update');
+    replacement.emit('reconnect', { code: code.toLowerCase(), resumeToken: session1.resumeToken });
+
+    const renewedSession = await resumed;
+    expect(renewedSession.code).toBe(code);
+    expect(renewedSession.resumeToken).not.toBe(session1.resumeToken);
+    expect((await state).state.myIndex).toBe(0);
+    cleanup(p2, attacker, replacement);
+  });
+
+  it('replays a pending roots prompt after reconnect', async () => {
+    const { p1, p2, code, session1 } = await setupGame();
+    await doRedraw(p1, p2);
+    const room = roomManager.getRoom(code)!;
+    room.gameState.phase = 'playing';
+    room.gameState.currentPlayerIndex = 0;
+    room.gameState.pendingAction = 'roots_move';
+    room.gameState.pendingActionPlayer = 0;
+
+    const disconnected = waitFor(p2, 'opponent_disconnected');
+    p1.disconnect();
+    await disconnected;
+
+    const replacement = createClient();
+    const connected = waitFor(replacement, 'connect');
+    replacement.connect();
+    await connected;
+    const state = waitFor(replacement, 'state_update');
+    const prompt = waitFor(replacement, 'roots_prompt');
+    replacement.emit('reconnect', { code, resumeToken: session1.resumeToken });
+
+    await Promise.all([state, prompt]);
+    cleanup(p2, replacement);
+  });
+
+  it('replays the final result after reconnect', async () => {
+    const { p1, p2, code, session1 } = await setupGame();
+    const room = roomManager.getRoom(code)!;
+    room.gameState.phase = 'game_over';
+    room.gameState.players[0].roundsWon = 2;
+
+    const disconnected = waitFor(p2, 'opponent_disconnected');
+    p1.disconnect();
+    await disconnected;
+
+    const replacement = createClient();
+    const connected = waitFor(replacement, 'connect');
+    replacement.connect();
+    await connected;
+    const gameOver = waitFor<{ winner: number | null; finalScore: [number, number] }>(replacement, 'game_over');
+    replacement.emit('reconnect', { code, resumeToken: session1.resumeToken });
+
+    expect(await gameOver).toEqual({ winner: 0, finalScore: [2, 0] });
+    cleanup(p2, replacement);
   });
 });
 

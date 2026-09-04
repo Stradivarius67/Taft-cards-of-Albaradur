@@ -1,20 +1,29 @@
+import { lazy, Suspense } from 'react';
 import { useLobbyStore } from '../../store/lobbyStore';
 import HomeScreen from '../HomeScreen/HomeScreen';
-import WaitingRoom from '../WaitingRoom/WaitingRoom';
-import FactionSelect from '../FactionSelect/FactionSelect';
-import RoomFullScreen from '../RoomFullScreen/RoomFullScreen';
+
+const WaitingRoom = lazy(() => import('../WaitingRoom/WaitingRoom'));
+const FactionSelect = lazy(() => import('../FactionSelect/FactionSelect'));
+const RoomFullScreen = lazy(() => import('../RoomFullScreen/RoomFullScreen'));
 
 export default function Lobby() {
   const screen = useLobbyStore(s => s.screen);
 
+  let content;
   switch (screen) {
     case 'home':
-      return <HomeScreen />;
+      content = <HomeScreen />;
+      break;
     case 'waiting':
-      return <WaitingRoom />;
+      content = <WaitingRoom />;
+      break;
     case 'faction_select':
-      return <FactionSelect />;
+      content = <FactionSelect />;
+      break;
     case 'room_full':
-      return <RoomFullScreen />;
+      content = <RoomFullScreen />;
+      break;
   }
+
+  return <Suspense fallback={<div role="status">Загрузка...</div>}>{content}</Suspense>;
 }

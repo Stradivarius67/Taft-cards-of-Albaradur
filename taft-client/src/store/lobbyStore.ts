@@ -31,6 +31,14 @@ interface LobbyStore {
   setOpenHands: (v: boolean) => void;
   setMutator: (m: ArenaMutator) => void;
   goHome: () => void;
+  restoreSession: (data: {
+    code: string;
+    phase: 'waiting' | 'faction_select';
+    playerIndex: 0 | 1;
+    selectedFaction: FactionId | null;
+    opponentConnected: boolean;
+    opponentReady: boolean;
+  }) => void;
   reset: () => void;
 }
 
@@ -94,6 +102,18 @@ export const useLobbyStore = create<LobbyStore>((set, get) => ({
       selectedMutator: getWeeklyMutator(),
     });
   },
+
+  restoreSession: (data) => set({
+    screen: data.phase === 'waiting' ? 'waiting' : 'faction_select',
+    roomCode: data.code,
+    isHost: data.playerIndex === 0,
+    opponentConnected: data.opponentConnected,
+    selectedFaction: data.selectedFaction,
+    factionConfirmed: data.selectedFaction !== null,
+    opponentReady: data.opponentReady,
+    error: null,
+    isLoading: false,
+  }),
 
   reset: () => set({
     screen: 'home',

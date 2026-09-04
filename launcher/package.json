@@ -6,13 +6,13 @@
   "main": "dist/bundle.cjs",
   "bin": "dist/bundle.cjs",
   "scripts": {
-    "build:server": "npm run build --prefix ../taft-server",
     "build:client": "npm run build --prefix ../taft-client",
+    "typecheck": "tsc --noEmit",
     "prepare-bundle": "node scripts/prepare-bundle.js",
     "bundle": "node scripts/bundle.js",
     "build:exe": "pkg . --targets node18-win-x64 --output dist/Taft.exe --compress GZip",
     "build:all-platforms": "pkg . --targets node18-win-x64,node18-macos-x64,node18-linux-x64 --output dist/Taft --compress GZip",
-    "build": "npm run build:server && npm run build:client && npm run prepare-bundle && npm run bundle && npm run build:exe",
+    "build": "npm run typecheck && npm run build:client && npm run prepare-bundle && npm run bundle && npm run build:exe",
     "dev": "node scripts/prepare-bundle.js && node scripts/bundle.js && node dist/bundle.cjs"
   },
   "pkg": {
@@ -29,7 +29,6 @@
     "cors": "^2.8.5",
     "express": "^4.18.0",
     "localtunnel": "^2.0.2",
-    "ngrok": "^5.0.0-beta.2",
     "socket.io": "^4.7.0"
   },
   "devDependencies": {

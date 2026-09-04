@@ -36,27 +36,30 @@ GET /health → { "status": "ok", "rooms": <number> }
 
 | Событие | Данные | Описание |
 |---|---|---|
-| `create_room` | — | Создать комнату |
+| `create_room` | `{ openHands?, mutator? }` | Создать комнату |
 | `join_room` | `{ code: string }` | Подключиться к комнате по коду |
 | `select_faction` | `{ faction: FactionId }` | Выбрать фракцию |
 | `redraw_cards` | `{ cardIds: string[] }` | Обмен карт из стартовой руки (макс 2) |
 | `play_card` | `{ cardId: string, targetRow?: CardRow }` | Сыграть карту |
 | `medic_choice` | `{ cardId: string \| null }` | Выбор карты для медика |
 | `pass` | — | Спасовать |
-| `scoiatael_first` | `{ goFirst: boolean }` | Скоя'таэли выбирают кто ходит первым |
-| `reconnect` | `{ code: string }` | Переподключение к комнате |
+| `partisans_first` | `{ goFirst: boolean }` | Партизаны выбирают, кто ходит первым |
+| `reconnect` | `{ code, resumeToken }` | Безопасное восстановление сессии |
 
 ### К клиенту (исходящие)
 
 | Событие | Данные | Описание |
 |---|---|---|
 | `room_created` | `{ code: string }` | Комната создана |
+| `session_ready` | `{ code, resumeToken }` | Сессия готова или токен обновлён |
+| `session_invalid` | `{ message }` | Сохранённую сессию нельзя восстановить |
+| `lobby_restored` | `{ code, phase, playerIndex, ... }` | Лобби восстановлено после reconnect |
 | `player_joined` | `{}` | Второй игрок подключился |
 | `faction_selected` | `{ playerIndex, faction }` | Игрок выбрал фракцию |
 | `game_started` | `{ state }` | Игра началась (видимое состояние) |
 | `state_update` | `{ state }` | Обновление состояния после каждого хода |
 | `medic_prompt` | `{ cards: Card[] }` | Предложение выбрать карту из сброса |
-| `scoiatael_prompt` | `{}` | Запрос кто ходит первым |
+| `partisans_prompt` | `{}` | Запрос, кто ходит первым |
 | `round_result` | `{ winner, scores }` | Результат раунда |
 | `game_over` | `{ winner, finalScore }` | Игра окончена |
 | `opponent_disconnected` | `{}` | Оппонент отключился |

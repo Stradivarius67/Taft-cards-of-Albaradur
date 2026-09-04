@@ -33,7 +33,6 @@ function LandscapeBlocker() {
 }
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
-import { sendPartisansFirst } from '../../services/socket';
 import { FACTION_COLORS } from '../../types/game';
 import InfoBar from '../InfoBar/InfoBar';
 import ScorePanel from '../ScorePanel/ScorePanel';
@@ -65,6 +64,8 @@ export default function GameField() {
   const showRootsMode = useGameStore(s => s.showRootsMode);
   const rootsMoves = useGameStore(s => s.rootsMoves);
   const submitRootsMoves = useGameStore(s => s.submitRootsMoves);
+  const beginRootsMove = useGameStore(s => s.beginRootsMove);
+  const choosePartisansFirst = useGameStore(s => s.choosePartisansFirst);
   const decoyTargetMode = useGameStore(s => s.decoyTargetMode);
   const handleDecoyTarget = useGameStore(s => s.handleDecoyTarget);
   const myStrength = useGameStore(s => s.myStrength);
@@ -167,6 +168,9 @@ export default function GameField() {
               strength={mStr}
               decoyTargetMode={decoyTargetMode}
               onDecoyTarget={decoyTargetMode ? handleDecoyTarget : undefined}
+              rootsTargetMode={showRootsMode && rootsMoves.length < 2}
+              selectedRootsIds={rootsMoves.map(move => move.cardId)}
+              onRootsTarget={showRootsMode ? beginRootsMove : undefined}
             />
           </div>
         </div>
@@ -185,7 +189,7 @@ export default function GameField() {
             className={styles.rootsOverlay}
           >
             <span className={styles.rootsText}>
-              Корни Тунграда: выберите до 2 карт для перемещения ({rootsMoves.length}/2)
+              Корни Тунграда: выберите до 2 карт, затем новый ряд ({rootsMoves.length}/2)
             </span>
             <button className={styles.rootsBtn} onClick={submitRootsMoves}>
               Подтвердить
@@ -224,12 +228,10 @@ export default function GameField() {
               <div className={styles.partisansTitle}>Вы ходите первым?</div>
               <div className={styles.partisansBtns}>
                 <button className={styles.partisansBtn} onClick={() => {
-                  sendPartisansFirst(true);
-                  useGameStore.getState().setPartisansPrompt(false);
+                  choosePartisansFirst(true);
                 }}>Да</button>
                 <button className={styles.partisansBtn} onClick={() => {
-                  sendPartisansFirst(false);
-                  useGameStore.getState().setPartisansPrompt(false);
+                  choosePartisansFirst(false);
                 }}>Нет</button>
               </div>
             </motion.div>

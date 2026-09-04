@@ -93,13 +93,14 @@ describe('Leader Abilities', () => {
       expect(s.currentPlayerIndex).toBe(1);
     });
 
-    it('should keep turn if opponent passed', () => {
+    it('should resolve the round if leader use empties the active player hand after opponent passed', () => {
       const state = makeState();
       state.currentPlayerIndex = 0;
       state.players[1].passed = true;
       state.players[0].field.melee = [makeUnit()];
       const { state: s } = engine.activateLeader(state, 0, { targetRow: 'melee' });
-      expect(s.currentPlayerIndex).toBe(0);
+      expect(s.round).toBe(2);
+      expect(s.lastRoundResult).toMatchObject({ round: 1 });
     });
 
     it('should not mutate original state (immutability)', () => {
@@ -297,11 +298,13 @@ describe('Leader Abilities', () => {
       expect(error).toBe('Можно переместить максимум 2 карты');
     });
 
-    it('should reject 0 moves', () => {
+    it('should allow 0 moves to cancel without leaving the game pending', () => {
       const state = makeState('litlad_partisans', 'imperial_dogs');
       const activated = engine.activateLeader(state, 0);
-      const { error } = engine.resolveRoots(activated.state, 0, []);
-      expect(error).toBe('Нужно переместить хотя бы 1 карту');
+      const { state: resolved, error } = engine.resolveRoots(activated.state, 0, []);
+      expect(error).toBeUndefined();
+      expect(resolved.pendingAction).toBeNull();
+      expect(resolved.currentPlayerIndex).toBe(1);
     });
 
     it('should reject moving opponent card', () => {

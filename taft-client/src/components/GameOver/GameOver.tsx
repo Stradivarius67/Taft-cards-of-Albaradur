@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
+import { disconnect } from '../../services/socket';
 import styles from './GameOver.module.css';
 
 export default function GameOver() {
@@ -12,6 +13,7 @@ export default function GameOver() {
   const titleText = won === true ? 'Победа!' : won === false ? 'Поражение' : 'Ничья';
 
   const handleNewGame = () => {
+    disconnect();
     window.location.reload();
   };
 

@@ -18,6 +18,46 @@ function getBackendUrl(): string {
 
 const BACKEND_URL = getBackendUrl();
 const IS_DEV = import.meta.env.DEV;
+const RESUME_SESSION_KEY = 'taft:resume-session';
+
+interface ResumeSession {
+  code: string;
+  resumeToken: string;
+}
+
+function readResumeSession(): ResumeSession | null {
+  try {
+    const raw = sessionStorage.getItem(RESUME_SESSION_KEY);
+    if (!raw) return null;
+    const value = JSON.parse(raw) as Partial<ResumeSession>;
+    return typeof value.code === 'string' && typeof value.resumeToken === 'string'
+      ? { code: value.code, resumeToken: value.resumeToken }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveResumeSession(session: ResumeSession): void {
+  try { sessionStorage.setItem(RESUME_SESSION_KEY, JSON.stringify(session)); } catch { /* ignore */ }
+}
+
+export function clearResumeSession(): void {
+  try { sessionStorage.removeItem(RESUME_SESSION_KEY); } catch { /* ignore */ }
+}
+
+export function hasResumeSession(): boolean {
+  return readResumeSession() !== null;
+}
+
+export function requestSessionResume(): boolean {
+  const session = readResumeSession();
+  const s = getSocket();
+  if (!session || !s.connected) return false;
+  devLog('\u2192', 'reconnect', { code: session.code });
+  s.emit('reconnect', session);
+  return true;
+}
 
 function devLog(direction: string, event: string, data?: unknown): void {
   if (!IS_DEV) return;
@@ -43,6 +83,7 @@ export function connect(): void {
 }
 
 export function disconnect(): void {
+  clearResumeSession();
   getSocket().disconnect();
 }
 
@@ -126,12 +167,23 @@ export type SocketEventHandlers = {
   onConnect: () => void;
   onDisconnect: () => void;
   onRoomCreated: (data: { code: string }) => void;
+  onSessionReady: (data: { code: string; resumeToken: string }) => void;
+  onSessionInvalid: (data: { message: string }) => void;
+  onLobbyRestored: (data: {
+    code: string;
+    phase: 'waiting' | 'faction_select';
+    playerIndex: 0 | 1;
+    selectedFaction: FactionId | null;
+    opponentConnected: boolean;
+    opponentReady: boolean;
+  }) => void;
   onPlayerJoined: () => void;
   onFactionSelected: (data: { playerIndex: number; faction: FactionId }) => void;
   onRoomFull: (data: { code: string }) => void;
   onSpectatorJoined: (data: { state: SpectatorGameState }) => void;
   onSpectatorCount: (data: { count: number }) => void;
   onEmote: (data: { playerIndex: 0 | 1; emoteId: EmoteId; faction: FactionId }) => void;
+  onConnectError: (error: Error) => void;
 };
 
 export function setupListeners(handlers: SocketEventHandlers): () => void {
@@ -159,12 +211,16 @@ export function setupListeners(handlers: SocketEventHandlers): () => void {
     connect: wrapHandler('connect', handlers.onConnect),
     disconnect: wrapHandler('disconnect', handlers.onDisconnect),
     room_created: wrapHandler('room_created', handlers.onRoomCreated),
+    session_ready: wrapHandler('session_ready', handlers.onSessionReady),
+    session_invalid: wrapHandler('session_invalid', handlers.onSessionInvalid),
+    lobby_restored: wrapHandler('lobby_restored', handlers.onLobbyRestored),
     player_joined: wrapHandler('player_joined', handlers.onPlayerJoined),
     faction_selected: wrapHandler('faction_selected', handlers.onFactionSelected),
     room_full: wrapHandler('room_full', handlers.onRoomFull),
     spectator_joined: wrapHandler('spectator_joined', handlers.onSpectatorJoined),
     spectator_count: wrapHandler('spectator_count', handlers.onSpectatorCount),
     emote: wrapHandler('emote', handlers.onEmote),
+    connect_error: wrapHandler('connect_error', handlers.onConnectError),
   };
 
   s.on('state_update', wrapped.state_update);
@@ -181,12 +237,16 @@ export function setupListeners(handlers: SocketEventHandlers): () => void {
   s.on('connect', wrapped.connect as () => void);
   s.on('disconnect', wrapped.disconnect as () => void);
   s.on('room_created', wrapped.room_created);
+  s.on('session_ready', wrapped.session_ready);
+  s.on('session_invalid' as any, wrapped.session_invalid);
+  s.on('lobby_restored' as any, wrapped.lobby_restored);
   s.on('player_joined', wrapped.player_joined as () => void);
   s.on('faction_selected', wrapped.faction_selected);
   s.on('room_full' as any, wrapped.room_full);
   s.on('spectator_joined' as any, wrapped.spectator_joined);
   s.on('spectator_count' as any, wrapped.spectator_count);
   s.on('emote' as any, wrapped.emote);
+  s.on('connect_error', wrapped.connect_error);
 
   return () => {
     s.off('state_update', wrapped.state_update);
@@ -203,11 +263,15 @@ export function setupListeners(handlers: SocketEventHandlers): () => void {
     s.off('connect', wrapped.connect as () => void);
     s.off('disconnect', wrapped.disconnect as () => void);
     s.off('room_created', wrapped.room_created);
+    s.off('session_ready', wrapped.session_ready);
+    s.off('session_invalid' as any, wrapped.session_invalid);
+    s.off('lobby_restored' as any, wrapped.lobby_restored);
     s.off('player_joined', wrapped.player_joined as () => void);
     s.off('faction_selected', wrapped.faction_selected);
     s.off('room_full' as any, wrapped.room_full);
     s.off('spectator_joined' as any, wrapped.spectator_joined);
     s.off('spectator_count' as any, wrapped.spectator_count);
     s.off('emote' as any, wrapped.emote);
+    s.off('connect_error', wrapped.connect_error);
   };
 }

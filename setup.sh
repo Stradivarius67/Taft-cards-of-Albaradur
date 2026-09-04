@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 echo "=== Тафт: Карты Альбарадура — первый запуск ==="
 echo ""
 
@@ -17,10 +19,12 @@ fi
 echo "Node.js $(node -v) — OK"
 echo ""
 
-# Установка зависимостей
+# Установка зависимостей строго по lock-файлу
 echo "Устанавливаю зависимости..."
-npm install
-npm run install:all
+npm ci
+
+echo "Собираю production-версию..."
+npm run build
 
 echo ""
 echo "=== Готово! ==="
@@ -28,7 +32,7 @@ echo ""
 echo "Запуск для разработки (2 процесса, hot reload):"
 echo "  npm run dev"
 echo ""
-echo "Запуск для игры (один сервер, одна ссылка):"
+echo "Запуск для игры (готовая сборка, один сервер):"
 echo "  npm start"
 echo ""
 echo "Для онлайн-игры — одна команда поднимает всё:"

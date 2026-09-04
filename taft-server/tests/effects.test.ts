@@ -163,6 +163,17 @@ describe('Effects (immutable)', () => {
       expect(s.players[0].field.melee.some(c => c.id === 'med2')).toBe(true);
       // No chain — function returns plain state, not { state, pendingChoice }
     });
+
+    it('should never revive special or weather cards', () => {
+      const state = makeState();
+      state.players[0].discard = [
+        makeCard({ id: 'special', type: 'special', ability: 'horn' }),
+      ];
+
+      const s = applyMedicChoice(state, 0, 'special');
+      expect(s.players[0].discard).toHaveLength(1);
+      expect(s.players[0].field.melee).toHaveLength(0);
+    });
   });
 
   // ===========================================================================

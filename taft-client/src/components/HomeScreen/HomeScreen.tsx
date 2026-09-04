@@ -9,7 +9,10 @@ const WEEKLY_MUTATOR = getWeeklyMutator();
 
 export default function HomeScreen() {
   const [code, setCode] = useState('');
-  const { createRoom, joinRoom, error, isLoading } = useLobbyStore();
+  const createRoom = useLobbyStore(s => s.createRoom);
+  const joinRoom = useLobbyStore(s => s.joinRoom);
+  const error = useLobbyStore(s => s.error);
+  const isLoading = useLobbyStore(s => s.isLoading);
   const openHands = useLobbyStore(s => s.openHands);
   const setOpenHands = useLobbyStore(s => s.setOpenHands);
   const selectedMutator = useLobbyStore(s => s.selectedMutator);

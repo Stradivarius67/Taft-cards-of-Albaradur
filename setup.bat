@@ -12,8 +12,12 @@ echo Node.js найден — OK
 echo.
 
 echo Устанавливаю зависимости...
-call npm install
-call npm run install:all
+call npm ci
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
+echo Собираю production-версию...
+call npm run build
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 echo.
 echo === Готово! ===

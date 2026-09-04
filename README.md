@@ -13,7 +13,8 @@ setup.bat           # Windows
 
 ### Запуск для игры
 ```bash
-npm start           # Собирает и запускает на http://localhost:3000
+npm run build       # После изменения исходников
+npm start           # Быстро запускает готовую сборку на http://localhost:3000
 ```
 
 ### Запуск для разработки
@@ -96,7 +97,8 @@ npm run build:exe             # из корня — собирает launcher/di
 | Команда | Описание |
 |---------|----------|
 | `npm run dev` | Dev-режим (hot reload) |
-| `npm start` | Production-сборка + запуск |
+| `npm run build` | Полная production-сборка сервера и клиента |
+| `npm start` | Запуск готовой production-сборки |
 | `npm run host` | Production + ngrok одной командой (для онлайн-партии) |
 | `npm test` | Тесты |
 | `npm run clean` | Очистка |

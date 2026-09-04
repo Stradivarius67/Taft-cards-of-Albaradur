@@ -1,20 +1,27 @@
+import { memo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
 import { FACTION_NAMES } from '../../types/game';
 import HandCard from '../HandCard/HandCard';
 import styles from './Hand.module.css';
 
-export default function Hand() {
+function Hand() {
   const gs = useGameStore(s => s.gameState);
   const selectedCardId = useGameStore(s => s.selectedCardId);
   const selectCard = useGameStore(s => s.selectCard);
-  const canPlay = useGameStore(s => s.canPlay);
   const isMobile = useGameStore(s => s.isMobile);
+  const isConnected = useGameStore(s => s.isConnected);
+  const isProcessing = useGameStore(s => s.isProcessing);
 
   if (!gs) return null;
   const { hand, faction, deck } = gs.me;
 
   const cramped = hand.length >= 8 ? styles.cramped : '';
+  const handEnabled = isConnected
+    && !isProcessing
+    && gs.phase === 'playing'
+    && gs.currentPlayerIndex === gs.myIndex
+    && !gs.me.passed;
 
   return (
     <div className={`${styles.hand} ${cramped}`}>
@@ -31,7 +38,7 @@ export default function Hand() {
               key={card.id}
               card={card}
               isSelected={card.id === selectedCardId}
-              canPlay={canPlay()}
+              canPlay={handEnabled}
               onClick={() => selectCard(card.id)}
             />
           ))}
@@ -43,3 +50,5 @@ export default function Hand() {
     </div>
   );
 }
+
+export default memo(Hand);

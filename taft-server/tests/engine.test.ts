@@ -245,6 +245,57 @@ describe('GameEngine', () => {
       const { error } = engine.playCard(state, 0, card.id);
       expect(error).toBeDefined();
     });
+
+    it('should make medic choice atomic and advance only after a valid choice', () => {
+      const state = readyState();
+      const medic = makeUnit({ id: 'medic', ability: 'medic' });
+      const discarded = makeUnit({ id: 'discarded', row: 'ranged' });
+      state.players[0].hand = [medic];
+      state.players[0].discard = [discarded];
+
+      const played = engine.playCard(state, 0, medic.id);
+      expect(played.error).toBeUndefined();
+      expect(played.state.pendingAction).toBe('medic_choice');
+      expect(played.state.currentPlayerIndex).toBe(0);
+
+      const outOfOrderPlay = engine.playCard(played.state, 0, medic.id);
+      expect(outOfOrderPlay.error).toContain('завершите');
+
+      const invalidChoice = engine.resolveMedicChoice(played.state, 1, discarded.id);
+      expect(invalidChoice.error).toBeDefined();
+
+      const resolved = engine.resolveMedicChoice(played.state, 0, discarded.id);
+      expect(resolved.error).toBeUndefined();
+      expect(resolved.state.pendingAction).toBeNull();
+      expect(resolved.state.currentPlayerIndex).toBe(1);
+      expect(resolved.state.players[0].field.ranged.some(card => card.id === discarded.id)).toBe(true);
+    });
+
+    it('should not mutate pending state when medic selection is skipped', () => {
+      const state = makeState();
+      state.phase = 'playing';
+      state.pendingAction = 'medic_choice';
+      state.pendingActionPlayer = 0;
+      state.pendingMedicCardIds = [];
+      const before = structuredClone(state);
+
+      const result = engine.resolveMedicChoice(state, 0, null);
+
+      expect(state).toEqual(before);
+      expect(result.state).not.toBe(state);
+      expect(result.state.pendingAction).toBeNull();
+    });
+
+    it('should block normal actions while a leader choice is pending', () => {
+      const state = readyState('imperial_dogs', 'lion_guard');
+      state.players[1].hand = [makeUnit({ id: 'target' })];
+      const activated = engine.activateLeader(state, 0);
+
+      expect(activated.state.pendingAction).toBe('informant_choice');
+      expect(engine.playCard(activated.state, 0, activated.state.players[0].hand[0].id).error)
+        .toContain('завершите');
+      expect(engine.pass(activated.state, 0)).toBe(activated.state);
+    });
   });
 
   // ===========================================================================
@@ -379,6 +430,22 @@ describe('GameEngine', () => {
   // pass & resolveRound
   // ===========================================================================
   describe('pass', () => {
+    it('can cancel a disconnected player pending action before auto-pass', () => {
+      const state = makeState();
+      state.phase = 'playing';
+      state.pendingAction = 'medic_choice';
+      state.pendingActionPlayer = 0;
+      state.pendingMedicCardIds = ['unit-1'];
+
+      const cancelled = engine.cancelPendingAction(state, 0);
+      const passed = engine.pass(cancelled, 0);
+
+      expect(cancelled.pendingAction).toBeNull();
+      expect(cancelled.pendingMedicCardIds).toBeUndefined();
+      expect(passed.players[0].passed).toBe(true);
+      expect(state.pendingAction).toBe('medic_choice');
+    });
+
     function readyState(): GameState {
       let s = engine.startGame(makeState('lion_guard', 'imperial_dogs'));
       s = engine.redrawCards(s, 0, []);
@@ -399,6 +466,31 @@ describe('GameEngine', () => {
       state.currentPlayerIndex = 0;
       const s = engine.pass(state, 0);
       expect(s.currentPlayerIndex).toBe(1);
+    });
+
+    it('force-passes a disconnected player before their turn arrives', () => {
+      const state = readyState();
+      state.currentPlayerIndex = 0;
+
+      const s = engine.forcePass(state, 1);
+
+      expect(s.players[1].passed).toBe(true);
+      expect(s.currentPlayerIndex).toBe(0);
+      expect(state.players[1].passed).toBe(false);
+    });
+
+    it('resolves the round when an empty active player auto-passes after the opponent', () => {
+      const state = readyState();
+      state.players[0].passed = true;
+      state.players[1].leaderUsed = true;
+      state.players[1].hand = [makeUnit({ id: 'last-card', strength: 4 })];
+      state.currentPlayerIndex = 1;
+
+      const result = engine.playCard(state, 1, 'last-card');
+
+      expect(result.error).toBeUndefined();
+      expect(result.state.round).toBe(2);
+      expect(result.state.lastRoundResult).toMatchObject({ round: 1 });
     });
 
     it('should resolve round when both pass', () => {

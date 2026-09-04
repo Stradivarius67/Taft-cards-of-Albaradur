@@ -18,7 +18,7 @@ interface GameStore {
   // --- UI state ---
   selectedCardId: string | null;
   showRowPicker: boolean;
-  rowPickerContext: 'play_card' | 'horn' | 'leader_rally' | 'leader_curse' | 'decoy' | null;
+  rowPickerContext: 'play_card' | 'horn' | 'leader_rally' | 'leader_curse' | 'decoy' | 'roots' | null;
   showMedicPicker: boolean;
   medicCards: Card[];
   showRoundResult: boolean;
@@ -51,7 +51,6 @@ interface GameStore {
 
   // --- Getters ---
   isMyTurn: () => boolean;
-  canPlay: () => boolean;
   me: () => MyPlayerState | null;
   opponent: () => OpponentState | null;
   myStrength: () => StrengthInfo;
@@ -65,6 +64,7 @@ interface GameStore {
   activateLeader: (params?: { targetRow?: CardRow }) => void;
   chooseMedic: (cardId: string | null) => void;
   chooseInformant: (cardId: string) => void;
+  choosePartisansFirst: (goFirst: boolean) => void;
   openRowPicker: (context: 'play_card' | 'horn' | 'leader_rally' | 'leader_curse') => void;
   closeRowPicker: () => void;
   setMedicPrompt: (cards: Card[]) => void;
@@ -73,6 +73,7 @@ interface GameStore {
   setInformantReveal: (cards: Card[]) => void;
   setPartisansPrompt: (show: boolean) => void;
   setRootsMode: (show: boolean) => void;
+  beginRootsMove: (cardId: string) => void;
   addRootsMove: (cardId: string, toRow: CardRow) => void;
   submitRootsMoves: () => void;
   setConnected: (v: boolean) => void;
@@ -94,6 +95,15 @@ interface GameStore {
 let emoteHideTimer: ReturnType<typeof setTimeout> | null = null;
 let emoteCooldownTimer: ReturnType<typeof setTimeout> | null = null;
 let errorClearTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearStoreTimers(): void {
+  if (emoteHideTimer) clearTimeout(emoteHideTimer);
+  if (emoteCooldownTimer) clearTimeout(emoteCooldownTimer);
+  if (errorClearTimer) clearTimeout(errorClearTimer);
+  emoteHideTimer = null;
+  emoteCooldownTimer = null;
+  errorClearTimer = null;
+}
 
 function calcStrength(field: { melee: Card[]; ranged: Card[]; siege: Card[] }): StrengthInfo {
   const sum = (cards: Card[]) => cards.reduce((s, c) => s + c.strength + (c.strengthModifier ?? 0), 0);
@@ -138,12 +148,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     return gs.phase === 'playing' && gs.currentPlayerIndex === gs.myIndex;
   },
 
-  canPlay: () => {
-    const gs = get().gameState;
-    if (!gs) return false;
-    return gs.phase === 'playing' && gs.currentPlayerIndex === gs.myIndex && !gs.me.passed && !get().isProcessing;
-  },
-
   me: () => get().gameState?.me ?? null,
   opponent: () => get().gameState?.opponent ?? null,
 
@@ -166,7 +170,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   selectCard: (cardId) => {
     const gs = get().gameState;
     if (!cardId || !gs) { set({ selectedCardId: null, decoyTargetMode: false }); return; }
-    if (get().isProcessing) return;
+    if (!get().isConnected || get().isProcessing) return;
     const card = gs.me.hand.find(c => c.id === cardId);
     if (!card) return;
 
@@ -213,6 +217,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   playSelectedCard: (targetRow) => {
+    if (!get().isConnected || get().isProcessing) return;
     const cardId = get().selectedCardId;
     if (!cardId) return;
     sock.sendPlayCard(cardId, targetRow);
@@ -220,25 +225,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   pass: () => {
-    if (get().isProcessing) return;
+    if (!get().isConnected || get().isProcessing) return;
     sock.sendPass();
     set({ isProcessing: true });
   },
 
   activateLeader: (params) => {
-    if (get().isProcessing) return;
+    if (!get().isConnected || get().isProcessing) return;
     sock.sendActivateLeader(params);
     set({ isProcessing: true });
   },
 
   chooseMedic: (cardId) => {
+    if (!get().isConnected || get().isProcessing) return;
     sock.sendMedicChoice(cardId);
-    set({ showMedicPicker: false, medicCards: [] });
+    set({ showMedicPicker: false, medicCards: [], isProcessing: true });
   },
 
   chooseInformant: (cardId) => {
+    if (!get().isConnected || get().isProcessing) return;
     sock.sendInformantChoice(cardId);
-    set({ showInformantReveal: false, informantCards: [] });
+    set({ showInformantReveal: false, informantCards: [], isProcessing: true });
+  },
+
+  choosePartisansFirst: (goFirst) => {
+    if (!get().isConnected || get().isProcessing) return;
+    sock.sendPartisansFirst(goFirst);
+    set({ showPartisansPrompt: false, isProcessing: true });
   },
 
   openRowPicker: (context) => set({ showRowPicker: true, rowPickerContext: context }),
@@ -257,6 +270,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setPartisansPrompt: (show) => set({ showPartisansPrompt: show }),
   setRootsMode: (show) => set({ showRootsMode: show, rootsMoves: show ? [] : get().rootsMoves }),
 
+  beginRootsMove: (cardId) => {
+    const { isConnected, isProcessing, rootsMoves, showRootsMode } = get();
+    if (!isConnected || isProcessing || !showRootsMode || rootsMoves.length >= 2) return;
+    if (rootsMoves.some(move => move.cardId === cardId)) return;
+    set({ selectedCardId: cardId, showRowPicker: true, rowPickerContext: 'roots' });
+  },
+
   addRootsMove: (cardId, toRow) => {
     const moves = [...get().rootsMoves];
     if (moves.length >= 2) return;
@@ -266,17 +286,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   submitRootsMoves: () => {
+    if (!get().isConnected || get().isProcessing) return;
     const moves = get().rootsMoves;
-    if (moves.length > 0) {
-      sock.sendRootsMove(moves);
-    }
-    set({ showRootsMode: false, rootsMoves: [] });
+    sock.sendRootsMove(moves);
+    set({ showRootsMode: false, rootsMoves: [], isProcessing: true });
   },
 
   setConnected: (v) => set({ isConnected: v }),
   setError: (msg) => {
     // Любая ошибка с сервера — снимаем "ожидание ответа", иначе клиент
-    // блокируется (canPlay() возвращает false) и игрок не может продолжить.
+    // блокируется и игрок не может продолжить.
     // Также сбрасываем режим выбора цели для приманки.
     set({
       error: msg,
@@ -299,6 +318,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setDecoyTargetMode: (v) => set({ decoyTargetMode: v }),
 
   handleDecoyTarget: (targetCardId) => {
+    if (!get().isConnected || get().isProcessing) return;
     const cardId = get().selectedCardId;
     if (!cardId) return;
     // For decoy, targetRow is used to pass the targetCardId
@@ -314,7 +334,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setSpectatorCount: (count) => set({ spectatorCount: count }),
 
   sendEmote: (emoteId) => {
-    if (get().emoteCooldown) return;
+    if (!get().isConnected || get().emoteCooldown) return;
     sock.sendEmote(emoteId);
     set({ emoteCooldown: true });
     if (emoteCooldownTimer) clearTimeout(emoteCooldownTimer);
@@ -351,13 +371,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   setIsMobile: (v) => set({ isMobile: v }),
 
-  reset: () => set({
-    gameState: null, selectedCardId: null, showRowPicker: false, rowPickerContext: null,
-    showMedicPicker: false, medicCards: [], showRoundResult: false, roundResult: null,
-    showGameOver: false, gameOverResult: null, showInformantReveal: false, informantCards: [],
-    showPartisansPrompt: false, showRootsMode: false, rootsMoves: [],
-    error: null, decoyTargetMode: false, isProcessing: false,
-    isSpectator: false, spectatorState: null, spectatorCount: 0,
-    detailCard: null, activeEmote: null, emoteCooldown: false,
-  }),
+  reset: () => {
+    clearStoreTimers();
+    set({
+      gameState: null, selectedCardId: null, showRowPicker: false, rowPickerContext: null,
+      showMedicPicker: false, medicCards: [], showRoundResult: false, roundResult: null,
+      showGameOver: false, gameOverResult: null, showInformantReveal: false, informantCards: [],
+      showPartisansPrompt: false, showRootsMode: false, rootsMoves: [],
+      error: null, decoyTargetMode: false, isProcessing: false,
+      isSpectator: false, spectatorState: null, spectatorCount: 0,
+      detailCard: null, activeEmote: null, emoteCooldown: false,
+    });
+  },
 }));

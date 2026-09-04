@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { WeatherEffects } from '../../types/game';
 import { useGameStore } from '../../store/gameStore';
@@ -19,7 +20,7 @@ const EFFECTS_SHORT: { key: keyof WeatherEffects; label: string }[] = [
   { key: 'rain', label: 'Дождь' },
 ];
 
-export default function WeatherBar({ weather }: Props) {
+function WeatherBar({ weather }: Props) {
   const isMobile = useGameStore(s => s.isMobile);
   const EFFECTS = isMobile ? EFFECTS_SHORT : EFFECTS_FULL;
   const active = EFFECTS.filter(e => weather[e.key]);
@@ -47,3 +48,5 @@ export default function WeatherBar({ weather }: Props) {
     </div>
   );
 }
+
+export default memo(WeatherBar);

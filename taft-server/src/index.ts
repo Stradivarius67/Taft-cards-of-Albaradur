@@ -12,6 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
 const app = express();
+app.disable('x-powered-by');
 app.use(cors());
 // gzip всё, что отдаёт сервер: HTML/JS/CSS дают ощутимое сжатие.
 // WebP уже сжат, но compression сам пропустит такие ответы — без вреда.
@@ -61,8 +62,35 @@ app.get('*', (req, res, next) => {
 // Socket.IO handlers
 setupSocketHandlers(io, roomManager);
 
+httpServer.once('error', (error: NodeJS.ErrnoException) => {
+  const reason = error.code === 'EADDRINUSE'
+    ? `Port ${PORT} is already in use`
+    : error.message;
+  console.error(`[${new Date().toISOString()}] Taft server failed: ${reason}`);
+  roomManager.destroy();
+  process.exit(1);
+});
+
 httpServer.listen(PORT, () => {
   console.log(`[${new Date().toISOString()}] Taft server running on port ${PORT}`);
 });
+
+let shuttingDown = false;
+function shutdown(signal: NodeJS.Signals): void {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`[${new Date().toISOString()}] ${signal} received, shutting down`);
+  roomManager.destroy();
+
+  const forceExitTimer = setTimeout(() => process.exit(1), 5_000);
+  forceExitTimer.unref();
+  io.close(() => {
+    clearTimeout(forceExitTimer);
+    process.exit(0);
+  });
+}
+
+process.once('SIGINT', () => shutdown('SIGINT'));
+process.once('SIGTERM', () => shutdown('SIGTERM'));
 
 export { app, io, httpServer };

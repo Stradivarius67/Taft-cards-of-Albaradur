@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import type { Card, CardRow } from '../../types/game';
 import { ROW_LABELS } from '../../types/game';
@@ -16,6 +17,9 @@ interface Props {
   onClick?: () => void;
   decoyTargetMode?: boolean;
   onCardClick?: (cardId: string) => void;
+  rootsTargetMode?: boolean;
+  selectedRootsIds?: string[];
+  onRootsTarget?: (cardId: string) => void;
 }
 
 /**
@@ -29,9 +33,10 @@ function canDecoyTarget(card: Card, myIndex: 0 | 1): boolean {
   return true;
 }
 
-export default function Row({
+function Row({
   rowType, cards, isWeatherActive, isHornActive, strength,
   isSelf, onClick, decoyTargetMode, onCardClick,
+  rootsTargetMode, selectedRootsIds = [], onRootsTarget,
 }: Props) {
   const myIndex = useGameStore(s => s.gameState?.myIndex ?? 0);
   const isMobile = useGameStore(s => s.isMobile);
@@ -57,15 +62,20 @@ export default function Row({
           {cards.map(card => {
             const isValidDecoyTarget =
               isSelf && !!decoyTargetMode && canDecoyTarget(card, myIndex);
+            const isValidRootsTarget =
+              isSelf && !!rootsTargetMode && card.type === 'unit' && !selectedRootsIds.includes(card.id);
             return (
               <CardSlot
                 key={card.id}
                 card={card}
                 isWeatherAffected={isWeatherActive}
                 isOpponent={!isSelf}
-                highlight={isValidDecoyTarget}
+                highlight={isValidDecoyTarget || isValidRootsTarget}
                 onClick={isValidDecoyTarget && onCardClick
-                  ? () => onCardClick(card.id) : undefined}
+                  ? () => onCardClick(card.id)
+                  : isValidRootsTarget && onRootsTarget
+                    ? () => onRootsTarget(card.id)
+                    : undefined}
               />
             );
           })}
@@ -74,3 +84,5 @@ export default function Row({
     </div>
   );
 }
+
+export default memo(Row);
